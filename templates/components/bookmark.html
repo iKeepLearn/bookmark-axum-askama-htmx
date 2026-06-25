@@ -75,7 +75,7 @@
     <div class="px-4 py-3.5 flex flex-col gap-2 flex-1">
         {% if !item.tags.is_empty() %}
         <div class="flex flex-wrap gap-1.5">
-            {% for tag in tags %}
+            {% for tag in item.tags %}
             <span
                 class="text-[10.5px] font-mono text-accent-ink bg-accent-soft px-1.5 py-0.5 rounded"
                 >{{ tag }}</span

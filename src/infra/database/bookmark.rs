@@ -232,27 +232,27 @@ impl BookmarkRepository for PgBookmarkRepository {
         let offset = (page - 1) * page_size;
         let mut qb: QueryBuilder<Postgres> = QueryBuilder::new(
             r#"
-            SELECT
-                b.id,
-                b.title,
-                b.url,
-                b.cover_image,
-                b.desc,
-                b.category_id,
-                COALESCE(tags.tags, '[]') AS tags,
-                b.created_at,
-                b.updated_at
-            FROM bookmarks b
-            LEFT JOIN LATERAL (
-                SELECT json_agg(
-                    json_build_object('id', t.id, 'name', t.name)
-                    ORDER BY t.id
-                ) AS tags
-                FROM bookmark_tags nt
-                JOIN tags t ON t.id = nt.tag_id
-                WHERE nt.bookmark_id = b.id
-            ) tags ON true
-            "#,
+                   SELECT
+                       b.id,
+                       b.title,
+                       b.url,
+                       b.cover_image,
+                       b.desc,
+                       b.category_id,
+                       COALESCE(tags.tags, '[]') AS tags,
+                       b.created_at,
+                       b.updated_at
+                   FROM bookmarks b
+                   LEFT JOIN LATERAL (
+                       SELECT json_agg(
+                           json_build_object('id', t.id, 'name', t.name)
+                           ORDER BY t.id
+                       ) AS tags
+                       FROM bookmark_tags nt
+                       JOIN tags t ON t.id = nt.tag_id
+                       WHERE nt.bookmark_id = b.id
+                   ) tags ON true
+                   "#,
         );
 
         let mut has_where = false;
@@ -288,12 +288,12 @@ impl BookmarkRepository for PgBookmarkRepository {
 
                 qb.push(
                     r#"
-                EXISTS (
-                    SELECT 1
-                    FROM bookmark_tags nt2
-                    WHERE nt2.bookmark_id = b.id
-                    AND nt2.tag_id = ANY(
-                "#,
+                       EXISTS (
+                           SELECT 1
+                           FROM bookmark_tags nt2
+                           WHERE nt2.bookmark_id = b.id
+                           AND nt2.tag_id = ANY(
+                       "#,
                 );
 
                 qb.push_bind(tag_ids);

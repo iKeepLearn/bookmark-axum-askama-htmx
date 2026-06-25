@@ -58,7 +58,6 @@ pub struct BookmarkListTemplate {
     pub selected_tag_ids: Vec<i32>,
     pub search_keyword: String,
     pub is_admin: bool,
-    pub tags: Vec<String>,
 }
 
 impl BookmarkListTemplate {
@@ -202,7 +201,6 @@ pub async fn get_home(
                 selected_tag_ids: selected_tag_ids.clone(),
                 search_keyword: search_keyword.clone(),
                 is_admin: user.is_admin,
-                tags: tags.clone().into_iter().map(|t| t.name).collect(),
             };
             if headers.get("HX-Request").is_some() {
                 render_template(bookmarks_template)

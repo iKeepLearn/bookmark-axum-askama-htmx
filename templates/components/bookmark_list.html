@@ -4,7 +4,8 @@
     class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-5"
     hx-swap-oob="beforeend:#navlist"
 >
-    {% for nav in bookmarks %} {{nav::render(is_admin,nav) }} {% endfor %}
+    {% for bookmark in bookmarks %} {{nav::render(is_admin,bookmark) }} {%
+    endfor %}
 </div>
 
 <div
