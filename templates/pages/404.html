@@ -1,0 +1,33 @@
+{% extends "layouts/base.html" %} {% block title %}Not Found{% endblock title %}
+{% block content %}
+<div class="w-full max-w-sm text-center">
+    <div
+        class="font-mono text-[11px] uppercase tracking-[0.15em] text-ink-faint mb-3"
+    >
+        404 · NOT FOUND
+    </div>
+    <div class="flex justify-center mb-4">
+        <div
+            class="w-12 h-12 rounded-full bg-danger-soft flex items-center justify-center text-danger"
+        >
+            <svg
+                width="22"
+                height="22"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+            >
+                <circle cx="11" cy="11" r="7" />
+                <path d="M21 21l-4.3-4.3" />
+            </svg>
+        </div>
+    </div>
+    <div class="text-ink text-sm mb-6">{{msg}}</div>
+    <a
+        href="/"
+        class="inline-flex items-center justify-center px-4 py-2 bg-accent text-white text-sm font-medium rounded-lg hover:bg-accent-ink transition-colors"
+        >返回首页</a
+    >
+</div>
+{% endblock content %}

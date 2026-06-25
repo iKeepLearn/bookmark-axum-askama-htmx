@@ -1,0 +1,75 @@
+{% extends "layouts/base.html" %} {% block title %}Login{% endblock %} {% block
+content %}
+<div class="w-full max-w-sm">
+    <div class="text-center mb-8">
+        <div class="font-display font-bold text-2xl text-ink mb-1">书签库</div>
+        <div
+            class="font-mono text-[11px] uppercase tracking-widest text-ink-faint"
+        >
+            sign in
+        </div>
+    </div>
+
+    {% if !flash_messages.is_empty() %}
+    <div
+        class="mb-5 rounded-lg bg-danger-soft border border-danger/20 px-4 py-3"
+    >
+        {% for msg in flash_messages %}
+        <p class="text-danger text-sm">{{ msg }}</p>
+        {% endfor %}
+    </div>
+    {% endif %} {% if let Some(err) = errors.general %}
+    <div
+        class="mb-5 rounded-lg bg-danger-soft border border-danger/20 px-4 py-3"
+    >
+        <p class="text-danger text-sm">{{ err }}</p>
+    </div>
+    {% endif %}
+
+    <div class="bg-white border border-line rounded-xl shadow-sm p-6">
+        <form action="/login" method="post">
+            <div class="flex flex-col gap-5">
+                <div class="w-full">
+                    <label
+                        class="block font-mono text-[10.5px] uppercase tracking-[0.08em] text-ink-faint mb-1.5"
+                        >用户名</label
+                    >
+                    <input
+                        type="text"
+                        placeholder="Username"
+                        name="username"
+                        value="{{ username }}"
+                        class="px-3.5 py-2.5 border rounded-lg w-full text-sm text-ink placeholder:text-ink-faint focus:outline-none focus:ring-2 focus:ring-accent focus:border-accent transition-colors {% if errors.username.is_some() %}border-danger{% else %}border-line{% endif %}"
+                    />
+                    {% if let Some(err) = errors.username %}
+                    <p class="text-danger text-xs mt-1.5">{{ err }}</p>
+                    {% endif %}
+                </div>
+
+                <div class="w-full">
+                    <label
+                        class="block font-mono text-[10.5px] uppercase tracking-[0.08em] text-ink-faint mb-1.5"
+                        >密码</label
+                    >
+                    <input
+                        type="password"
+                        placeholder="Password"
+                        name="password"
+                        class="px-3.5 py-2.5 border rounded-lg w-full text-sm text-ink placeholder:text-ink-faint focus:outline-none focus:ring-2 focus:ring-accent focus:border-accent transition-colors {% if errors.password.is_some() %}border-danger{% else %}border-line{% endif %}"
+                    />
+                    {% if let Some(err) = errors.password %}
+                    <p class="text-danger text-xs mt-1.5">{{ err }}</p>
+                    {% endif %}
+                </div>
+
+                <button
+                    type="submit"
+                    class="mt-1 px-4 py-2.5 inline-flex items-center justify-center bg-accent text-white font-medium text-sm rounded-lg shadow-sm hover:bg-accent-ink transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2"
+                >
+                    登录
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

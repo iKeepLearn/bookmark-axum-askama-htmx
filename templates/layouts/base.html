@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        {% block head %}
+        <meta http-equiv="content-type" content="text/html; charset=utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+        <link
+            rel="stylesheet"
+            href="/static/css/main.css?v={{ crate::build_version() }}"
+        />
+        <link
+            href="https://fonts.bunny.net/css?family=inter:400,500,600|source-serif-4:500,600,700|ibm-plex-mono:500"
+            rel="stylesheet"
+        />
+        <script src="/static/htmx.min.js"></script>
+        <title>{% block title %}{% endblock title %}</title>
+        {% endblock head %}
+    </head>
+    <body class="bg-paper text-ink font-body antialiased">
+        <div
+            class="flex flex-col min-h-svh w-full items-center justify-center p-4 md:p-10"
+        >
+            {% block content %}{% endblock content %}
+        </div>
+        {% block script %}{% endblock script %}
+    </body>
+</html>

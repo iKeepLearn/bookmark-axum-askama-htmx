@@ -1,0 +1,24 @@
+@import "tailwindcss";
+@source "../templates/**/*.html";
+@source "../src/**/*.rs";
+@source "../src/**/*.html";
+@source "../static/**/*.html";
+@theme {
+    --color-paper: #f7f5f0;
+    --color-paper-deep: #efeae0;
+    --color-paper-deeper: #e7e0d3;
+    --color-ink: #20242c;
+    --color-ink-soft: #6b6e72;
+    --color-ink-faint: #9b9d9f;
+    --color-line: #e1dccf;
+    --color-accent: #2f6f5e;
+    --color-accent-ink: #1f4d40;
+    --color-accent-soft: #dce7e1;
+    --color-warm: #bd7a3c;
+    --color-danger: #ad5440;
+    --color-danger-soft: #f1e1da;
+
+    --font-display: "Source Serif 4", Georgia, serif;
+    --font-body: Inter, ui-sans-serif, sans-serif;
+    --font-mono: "IBM Plex Mono", ui-monospace, monospace;
+}

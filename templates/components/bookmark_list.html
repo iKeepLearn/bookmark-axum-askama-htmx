@@ -1,0 +1,40 @@
+{% import "components/bookmark.html" as nav %}
+<div
+    id="navlist"
+    class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-5"
+    hx-swap-oob="beforeend:#navlist"
+>
+    {% for nav in bookmarks %} {{nav::render(is_admin,nav) }} {% endfor %}
+</div>
+
+<div
+    id="load-more-container"
+    class="mt-4 w-full flex justify-center"
+    hx-swap-oob="true"
+>
+    {% if has_more %}
+    <button
+        type="button"
+        class="col-span-full group flex items-center justify-center cursor-pointer gap-2 mt-1 px-4 py-2.5 text-[13px] font-medium text-ink-soft hover:text-accent-ink transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+        hx-get="/?page={{ next_page }}{% if let Some(cid) = selected_category %}&c={{ cid }}{% endif %}{% if !selected_tag_ids.is_empty() %}&t={{ self.selected_tags_param() }}{% endif %}{% if !search_keyword.is_empty() %}&q={{ search_keyword|urlencode }}{% endif %}"
+        hx-target="#navlist"
+        hx-swap="beforeend"
+    >
+        <span class="in-[.htmx-request]:hidde">加载更多</span>
+        <span
+            class="hidden items-center gap-1.5 `in-[.htmx-request]:inline-flex"
+        >
+            <svg
+                class="w-3.5 h-3.5 animate-spin"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+            >
+                <path d="M21 12a9 9 0 1 1-9-9" />
+            </svg>
+            加载中…
+        </span>
+    </button>
+    {% endif %}
+</div>

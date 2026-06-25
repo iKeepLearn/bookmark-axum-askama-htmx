@@ -1,0 +1,250 @@
+{% extends "layouts/sidebar.html" %} {% block title %}Home{% endblock title %}
+{% block content %}
+<!-- 移动端顶栏 -->
+<header
+    class="md:hidden fixed top-0 left-0 right-0 h-13 bg-paper border-b border-line flex items-center justify-between px-3.5 z-50"
+>
+    <button
+        onclick="toggleDrawer()"
+        class="flex items-center gap-1.5 text-sm text-ink-soft px-2 py-1.5 rounded-lg hover:bg-paper-deep transition-colors"
+    >
+        <svg
+            width="16"
+            height="16"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+        >
+            <path d="M3 6h18M3 12h18M3 18h18" />
+        </svg>
+        菜单
+    </button>
+
+    <!-- 移动端搜索框替换“书签库”位置 -->
+    <form method="get" action="/" class="flex-1 mx-3">
+        <div class="relative">
+            <input
+                type="text"
+                name="q"
+                value="{{search_keyword}}"
+                placeholder="搜索书签..."
+                class="w-full px-3 py-1.5 bg-paper-deep border border-line rounded-lg text-sm text-ink placeholder:text-ink-faint focus:outline-none focus:ring-2 focus:ring-accent focus:border-accent transition-colors"
+            />
+            {% if let Some(cid) = selected_category %}
+            <input type="hidden" name="c" value="{{cid}}" />
+            {% endif %} {% if !selected_tag_ids.is_empty() %}
+            <input
+                type="hidden"
+                name="t"
+                value="{% for (i, tag_id) in selected_tag_ids.iter().enumerate() %}{% if i >0 %},{% endif %}{{tag_id}}{% endfor %}"
+            />
+            {% endif %}
+        </div>
+    </form>
+</header>
+
+<div class="flex h-screen overflow-hidden pt-13 md:pt-0">
+    <!-- 遮罩 -->
+    <div
+        id="overlay"
+        onclick="toggleDrawer()"
+        class="hidden fixed inset-0 bg-ink/35 z-40 md:hidden"
+    ></div>
+
+    <!-- 左侧栏（桌面 + 抽屉） -->
+    <aside
+        id="sidebar"
+        class="fixed md:static z-50 md:z-auto top-0 left-0 h-full md:h-auto w-60 bg-paper-deep border-r border-line transform -translate-x-full md:translate-x-0 transition-transform duration-200 motion-reduce:transition-none flex flex-col justify-between"
+    >
+        <!-- 上 -->
+        <div class="flex-1 overflow-y-auto px-5 pt-7 md:pt-7 mt-12 md:mt-0">
+            <div class="flex items-baseline gap-2 mb-7">
+                <span
+                    class="font-display font-bold text-[19px] tracking-tight text-ink"
+                    >书签库</span
+                >
+                <span
+                    class="font-mono text-[10px] uppercase tracking-[0.08em] text-ink-faint"
+                    >archive</span
+                >
+            </div>
+
+            <!-- 分类 -->
+            <div class="mb-6">
+                <div
+                    class="font-mono text-[10.5px] uppercase tracking-widest text-ink-faint mb-2.5 pl-0.5"
+                >
+                    分类
+                </div>
+                <div class="flex flex-col gap-px">
+                    <a
+                        href="/{% if !search_keyword.is_empty() %}?q={{urlencoding::encode(search_keyword)}}{% endif %}"
+                        class="relative flex items-center justify-between px-2.5 py-1.5 pl-3.5 rounded-lg text-[13.5px] transition-colors {% if is_all_selected() %}bg-accent-soft text-accent-ink font-medium{% else %}text-ink-soft hover:bg-paper-deeper hover:text-ink{% endif %}"
+                    >
+                        {% if is_all_selected() %}
+                        <span
+                            class="absolute left-0 top-1/2 -translate-y-1/2 w-0.75 h-3.5 rounded bg-accent"
+                        ></span>
+                        {% endif %} 全部
+                        <span class="font-mono text-[11px] opacity-70"
+                            >{{total_bookmarks()}}</span
+                        >
+                    </a>
+                    {% for cat in categories %}
+                    <a
+                        href="{{self.category_url(cat.id)}}"
+                        class="relative flex items-center justify-between px-2.5 py-1.5 pl-3.5 rounded-lg text-[13.5px] transition-colors {% if self.is_category_selected(cat.id) %}bg-accent-soft text-accent-ink font-medium{% else %}text-ink-soft hover:bg-paper-deeper hover:text-ink{% endif %}"
+                    >
+                        {% if self.is_category_selected(cat.id) %}
+                        <span
+                            class="absolute left-0 top-1/2 -translate-y-1/2 w-0.75 h-3.5 rounded bg-accent"
+                        ></span>
+                        {% endif %} {{cat.name}}
+                        <span class="font-mono text-[11px] opacity-70"
+                            >{{cat.bookmark_count}}</span
+                        >
+                    </a>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- 标签 -->
+            <div class="mb-6">
+                <div
+                    class="font-mono text-[10.5px] uppercase tracking-widest text-ink-faint mb-2.5 pl-0.5"
+                >
+                    标签
+                </div>
+                <div class="flex flex-wrap gap-1.5">
+                    {% for tag in tags %}
+                    <a
+                        href="{{self.tag_url(tag.id)}}"
+                        class="text-[11.5px] px-2.5 py-1 rounded-md transition-colors {% if self.is_tag_selected(tag.id) %}bg-accent text-white{% else %}bg-paper-deep text-ink-soft border border-transparent hover:border-accent hover:text-accent-ink{% endif %}"
+                    >
+                        {{tag.name}}
+                    </a>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+
+        <!-- 用户菜单（桌面端显示） -->
+        <div class="border-t border-line pb-6 relative">
+            <button
+                onclick="toggleUserMenu()"
+                class="w-full flex items-center justify-between text-[13px] text-ink-soft px-3 py-2 hover:bg-paper-deeper hover:text-ink transition-colors"
+            >
+                <span class="truncate">{{user.username}}</span>
+                <svg
+                    width="14"
+                    height="14"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    class="shrink-0"
+                >
+                    <path d="M9 18l6-6-6-6" />
+                </svg>
+            </button>
+
+            <div
+                id="userMenu"
+                class="hidden absolute bottom-full left-0 right-0 {% if user.is_admin %}-top-37{% else %}-top-11{% endif %} bg-paper border border-line rounded-md overflow-hidden z-10"
+            >
+                {% if user.is_admin %}
+                <a
+                    href="/manage/bookmark"
+                    class="flex items-center px-3 h-9 leading-none text-[13px] text-ink-soft hover:bg-paper-deeper hover:text-ink transition-colors"
+                >
+                    添加书签
+                </a>
+                <a
+                    href="/manage/bookmark/import"
+                    class="flex items-center px-3 h-9 leading-none text-[13px] text-ink-soft hover:bg-paper-deeper hover:text-ink transition-colors border-t border-line"
+                >
+                    导入书签
+                </a>
+                <a
+                    href="/manage/changepwd"
+                    class="flex items-center px-3 h-9 leading-none text-[13px] text-ink-soft hover:bg-paper-deeper hover:text-ink transition-colors border-t border-line"
+                >
+                    修改密码
+                </a>
+                {% endif %}
+                <form name="logoutForm" action="/manage/logout" method="post">
+                    <button
+                        type="submit"
+                        class="w-full cursor-pointer text-left px-3 h-9 leading-none text-[13px] text-danger hover:bg-danger hover:text-white transition-colors border-t border-line"
+                    >
+                        退出
+                    </button>
+                </form>
+            </div>
+        </div>
+    </aside>
+
+    <!-- 右侧内容 -->
+    <main class="flex-1 h-screen overflow-y-auto bg-paper px-6 md:px-10 py-8">
+        <!-- 桌面端顶部固定搜索框 -->
+        <div class="hidden md:flex items-center justify-between mb-8">
+            <form method="get" action="/" class="w-full max-w-md">
+                <div class="relative">
+                    <input
+                        type="text"
+                        name="q"
+                        value="{{search_keyword}}"
+                        placeholder="搜索书签..."
+                        class="w-48 px-4 py-2.5 bg-paper-deep border border-line rounded-lg text-sm text-ink placeholder:text-ink-faint focus:outline-none focus:ring-2 focus:ring-accent focus:border-accent transition-colors"
+                    />
+                    {% if let Some(cid) = selected_category %}
+                    <input type="hidden" name="c" value="{{cid}}" />
+                    {% endif %} {% if !selected_tag_ids.is_empty() %}
+                    <input
+                        type="hidden"
+                        name="t"
+                        value="{% for (i, tag_id) in selected_tag_ids.iter().enumerate() %}{% if i >0 %},{% endif %}{{tag_id}}{% endfor %}"
+                    />
+                    {% endif %}
+                </div>
+            </form>
+        </div>
+
+        {{bookmarks|safe}}
+    </main>
+</div>
+
+{% endblock content %} {% block script %}
+<script>
+    function toggleUserMenu() {
+        document.getElementById("userMenu").classList.toggle("hidden");
+    }
+
+    document.addEventListener("click", function (e) {
+        const menu = document.getElementById("userMenu");
+        const trigger = e.target.closest("button[onclick='toggleUserMenu()']");
+        if (!menu) return;
+        if (!menu.contains(e.target) && !trigger) {
+            menu.classList.add("hidden");
+        }
+    });
+
+    function toggleDrawer() {
+        const sidebar = document.getElementById("sidebar");
+        const overlay = document.getElementById("overlay");
+
+        const isOpen = sidebar.classList.contains("translate-x-0");
+
+        if (isOpen) {
+            sidebar.classList.remove("translate-x-0");
+            sidebar.classList.add("-translate-x-full");
+            overlay.classList.add("hidden");
+        } else {
+            sidebar.classList.add("translate-x-0");
+            sidebar.classList.remove("-translate-x-full");
+            overlay.classList.remove("hidden");
+        }
+    }
+</script>
+{% endblock script %}

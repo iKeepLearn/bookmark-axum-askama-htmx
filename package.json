@@ -1,0 +1,12 @@
+{
+  "scripts": {
+    "dev": "bunx @tailwindcss/cli -i ./templates/input.css -o ./public/css/main.css",
+    "watch": "bunx @tailwindcss/cli -i ./templates/input.css -o ./public/css/main.css --watch",
+    "prod": "bunx @tailwindcss/cli -i ./templates/input.css -o ./public/css/main.css --minify"
+  },
+  "devDependencies": {
+    "@tailwindcss/cli": "^4.3.1",
+    "@types/bun": "latest",
+    "tailwindcss": "^4.3.1"
+  }
+}

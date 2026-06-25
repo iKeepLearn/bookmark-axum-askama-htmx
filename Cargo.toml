@@ -1,0 +1,111 @@
+[package]
+name = "bookmark"
+version = "1.0.0"
+edition = "2024"
+
+[lib]
+path = "src/lib.rs"
+
+[[bin]]
+path = "src/main.rs"
+name = "bookmark"
+
+[dependencies]
+# =========================
+# Web 框架 / HTTP / 服务层
+# =========================
+axum = { version = "0.8.9", features = ["macros", "multipart"] }
+tower = "0.5.3"
+tower-http = { version = "0.7.0", features = ["full"] }
+tower-sessions = "0.15.0"
+http = "1.4.2"
+axum-extra = { version = "0.12.6", features = ["form"] }
+
+# =========================
+# Async Runtime
+# =========================
+tokio = { version = "1.52.3", features = ["full"] }
+tokio-util = { version = "0.7.18", features = ["io"] }
+futures-util = "0.3.32"
+
+# =========================
+# Database
+# =========================
+sqlx = { version = "0.9.0", default-features = false, features = [
+    "runtime-tokio",
+    "macros",
+    "postgres",
+    "uuid",
+    "chrono",
+    "migrate"
+] }
+
+# =========================
+# Serialization / Config
+# =========================
+serde = { version = "1.0.228", features = ["derive"] }
+serde_json = "1.0.150"
+serde-aux = "4"
+config = { version = "0.15.24", default-features = false, features = ["yaml"] }
+
+# =========================
+# Time / UUID
+# =========================
+chrono = { version = "0.4.45", default-features = false, features = ["clock", "serde"] }
+chrono-tz = { version = "0.10.4", default-features = false }
+time = "0.3.49"
+uuid = { version = "1.23.3", features = ["v4", "serde"] }
+
+# =========================
+# Security / Crypto / RNG
+# =========================
+argon2 = { version = "0.5", features = ["std"] }
+secrecy = { version = "0.10", features = ["serde"] }
+rand = { version = "0.10.1", features = ["std_rng"] }
+
+# =========================
+# HTTP Client
+# =========================
+reqwest = { version = "0.13.4", default-features = false, features = ["json"] }
+
+# =========================
+# Template Engine
+# =========================
+askama = { version = "0.16.0", features = ["full"] }
+
+# =========================
+# Logging / Observability
+# =========================
+tracing = "0.1.44"
+tracing-subscriber = { version = "0.3.23", features = ["registry", "env-filter"] }
+
+# =========================
+# Validation / Utils
+# =========================
+validator = "0.20.0"
+unicode-segmentation = "1.13.3"
+mime = "0.3.17"
+mime_guess = "2.0.5"
+urlencoding = "2.1.3"
+image = "0.25.10"
+
+# =========================
+# Error Handling
+# =========================
+anyhow = "1.0.102"
+thiserror = "2.0.18"
+webp = "0.3.1"
+bytes = "1.12.0"
+
+[profile.release]
+opt-level = "z"      # 针对体积优化 (z = 压缩，s = 平衡)
+lto = true           # 开启全局链接优化 (Link Time Optimization)
+codegen-units = 1    # 减少并行编译单元，提升优化质量
+panic = "abort"      # 发生 panic 时直接退出，不捕获回溯，大幅缩减代码量
+strip = true         # 自动剥离符号表 (等同于手动运行 strip 命令)
+debug = false        # 确保 release 模式下没有调试信息
+
+# 针对频繁变动的依赖进行局部优化，平衡编译时间
+[profile.dev]
+opt-level = 0
+debug = true

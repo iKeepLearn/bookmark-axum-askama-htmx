@@ -1,0 +1,86 @@
+name: Build and Release
+on:
+  push:
+    tags:
+      - "v*"
+  pull_request:
+    branches: [master]
+env:
+  CARGO_TERM_COLOR: always
+  SQLX_OFFLINE: true
+  APP_NAME: bookmark
+permissions:
+  contents: write
+jobs:
+  build_and_release:
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+        with:
+          # 确保获取足够历史，以便能够拉取并解析 Tag 信息
+          fetch-depth: 0
+
+      - name: Setup Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Rust Cache
+        uses: Swatinem/rust-cache@v2
+
+      # 新增：安装 bun，供 build.rs 在编译期调用 tailwindcss
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      # 新增：缓存 node_modules，加速重复构建
+      - name: Cache node_modules
+        uses: actions/cache@v4
+        with:
+          path: node_modules
+          key: ${{ runner.os }}-bun-${{ hashFiles('bun.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-bun-
+
+      # 新增：安装前端依赖（@tailwindcss/cli 等）
+      - name: Install frontend dependencies
+        run: bun install
+
+      - name: Build release
+        run: cargo build --release
+
+      # 步骤 1：如果是 Tag 触发，提取该 Tag 的注释说明（Tag Message）
+      - name: Extract Tag Message (Tags only)
+        if: startsWith(github.ref, 'refs/tags/')
+        id: get_tag_msg
+        run: |
+          # 强制同步本地标签信息
+          git fetch --tags --force
+          # 获取当前 Tag 的内容（支持多行文字）
+          TAG_BODY=$(git tag -l --format='%(contents)' ${{ github.ref_name }})
+          # 使用 GitHub Actions 的 EOF 语法安全处理多行文本输出
+          echo "body<<EOF" >> $GITHUB_OUTPUT
+          echo "$TAG_BODY" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+
+      - name: Package Asset (Tags only)
+        if: startsWith(github.ref, 'refs/tags/')
+        run: |
+          cp target/release/${{ env.APP_NAME }} .
+          cp migrations/20260624051018_init.sql ./ddl.sql
+          zip -r ${{ env.APP_NAME }}-linux-x86_64.zip ${{ env.APP_NAME }} configuration public ddl.sql bookmark.service nginx.conf
+
+      # 步骤 2：将提取到的 body 绑定到 Release 中
+      - name: Create Release and Upload Asset (Tags only)
+        if: startsWith(github.ref, 'refs/tags/')
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ github.ref_name }}
+          name: ${{ github.ref_name }}
+          body: ${{ steps.get_tag_msg.outputs.body }}
+          draft: false
+          prerelease: false
+          files: |
+            ${{ env.APP_NAME }}-linux-x86_64.zip
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

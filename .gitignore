@@ -1,0 +1,6 @@
+**/target
+upload
+node_modules
+configuration/local.yaml
+configuration/production.yaml
+.env

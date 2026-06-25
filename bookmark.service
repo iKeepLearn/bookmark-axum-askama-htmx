@@ -1,0 +1,16 @@
+[Unit]
+Description=bookmark rust server
+After=network.target nginx.service
+
+[Service]
+ExecStart=/var/project/bookmark/bookmark
+WorkingDirectory=/var/project/bookmark
+User=www-data
+Group=www-data
+Restart=always
+RestartSec=10
+Environment="RUST_LOG=error"
+
+
+[Install]
+WantedBy=multi-user.target

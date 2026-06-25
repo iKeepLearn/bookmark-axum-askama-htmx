@@ -1,0 +1,35 @@
+{% extends "layouts/base.html" %} {% block title %}Internal Error{% endblock
+title %} {% block content %}
+<div class="w-full max-w-sm text-center">
+    <div
+        class="font-mono text-[11px] uppercase tracking-[0.15em] text-ink-faint mb-3"
+    >
+        500 · INTERNAL ERROR
+    </div>
+    <div class="flex justify-center mb-4">
+        <div
+            class="w-12 h-12 rounded-full bg-danger-soft flex items-center justify-center text-danger"
+        >
+            <svg
+                width="22"
+                height="22"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+            >
+                <path d="M12 9v4M12 17h.01" />
+                <path
+                    d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0Z"
+                />
+            </svg>
+        </div>
+    </div>
+    <div class="text-ink text-sm mb-6">{{error_msg}}</div>
+    <a
+        href="/"
+        class="inline-flex items-center justify-center px-4 py-2 bg-accent text-white text-sm font-medium rounded-lg hover:bg-accent-ink transition-colors"
+        >返回首页</a
+    >
+</div>
+{% endblock content %}

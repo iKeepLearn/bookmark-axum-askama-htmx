@@ -1,0 +1,676 @@
+<!doctype html>
+<html lang="zh-CN">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>书签导入</title>
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+        <link rel="stylesheet" href="/static/css/main.css" />
+        <link
+            href="https://fonts.bunny.net/css?family=inter:400,500,600|source-serif-4:500,600,700|ibm-plex-mono:500"
+            rel="stylesheet"
+        />
+        <style>
+            .scroll-thin {
+                scrollbar-width: thin;
+                scrollbar-color: #c9c1ad #f3efe4;
+            }
+            .scroll-thin::-webkit-scrollbar {
+                width: 8px;
+            }
+            .scroll-thin::-webkit-scrollbar-track {
+                background: #f3efe4;
+            }
+            .scroll-thin::-webkit-scrollbar-thumb {
+                background: #c9c1ad;
+                border-radius: 4px;
+            }
+            .scroll-thin::-webkit-scrollbar-thumb:hover {
+                background: #b3a98f;
+            }
+
+            .catalog-row {
+                background: #fbf9f4;
+            }
+            .catalog-row td {
+                border-bottom: 1px solid #e1dccf;
+            }
+            .catalog-row:last-child td {
+                border-bottom: none;
+            }
+
+            .bookmark-table {
+                table-layout: fixed;
+                width: 100%;
+            }
+            .bookmark-table th,
+            .bookmark-table td {
+                overflow: hidden;
+            }
+            .bookmark-table td input,
+            .bookmark-table td select {
+                max-width: 100%;
+                overflow: hidden;
+                text-overflow: ellipsis;
+            }
+
+            .cell-input {
+                width: 100%;
+                background: transparent;
+                border: 1px solid transparent;
+                border-radius: 4px;
+                padding: 4px 6px;
+                transition:
+                    border-color 0.15s,
+                    background-color 0.15s;
+            }
+            .cell-input:hover {
+                background: #efeae0;
+            }
+            .cell-input:focus {
+                outline: none;
+                border-color: #2f6f5e;
+                background: #fff;
+            }
+
+            @media (prefers-reduced-motion: reduce) {
+                * {
+                    transition-duration: 0.01ms !important;
+                }
+            }
+        </style>
+    </head>
+    <body class="bg-paper text-ink font-body min-h-screen">
+        <div class="max-w-5xl mx-auto px-6 py-12">
+            <!-- 页头:目录卡片的标题区 -->
+            <header class="mb-10 border-b border-line pb-6">
+                <h1 class="font-display text-4xl font-semibold text-ink">
+                    书签导入
+                </h1>
+                <p class="mt-2 text-ink-soft max-w-xl">
+                    导入 Chrome
+                    导出的书签文件,在浏览器本地完成分类与整理,确认无误后再提交给后端归档——整个解析过程不经过任何服务器。
+                </p>
+            </header>
+
+            <section class="mb-10">
+                <h2
+                    class="font-display text-lg font-semibold mb-4 flex items-center gap-2"
+                >
+                    <span
+                        class="inline-flex items-center justify-center w-6 h-6 rounded-full bg-accent-soft text-accent-ink text-xs font-mono"
+                        >i</span
+                    >
+                    如何导出 Chrome 书签
+                </h2>
+                <ol class="grid sm:grid-cols-2 md:grid-cols-4 gap-4">
+                    <li class="bg-paper-deep border border-line rounded-lg p-4">
+                        <span class="font-mono text-xs text-warm">01</span>
+                        <p class="mt-1 text-sm">
+                            地址栏直接输入
+                            <code
+                                class="font-mono text-xs bg-paper-deeper px-1 py-0.5 rounded"
+                                >chrome://bookmarks</code
+                            >
+                            访问书签管理器。
+                        </p>
+                    </li>
+                    <li class="bg-paper-deep border border-line rounded-lg p-4">
+                        <span class="font-mono text-xs text-warm">02</span>
+                        <p class="mt-1 text-sm">
+                            点击右上角「⋮」菜单,选择「导出书签」,保存为一个
+                            <code
+                                class="font-mono text-xs bg-paper-deeper px-1 py-0.5 rounded"
+                                >bookmarks.html</code
+                            >
+                            文件。
+                        </p>
+                    </li>
+                    <li class="bg-paper-deep border border-line rounded-lg p-4">
+                        <span class="font-mono text-xs text-warm">03</span>
+                        <p class="mt-1 text-sm">
+                            把这个
+                            <code
+                                class="font-mono text-xs bg-paper-deeper px-1 py-0.5 rounded"
+                                >bookmarks.html</code
+                            >
+                            文件拖到下方区域,或点击选择文件——解析全部在本地完成。
+                        </p>
+                    </li>
+                    <li class="bg-paper-deep border border-line rounded-lg p-4">
+                        <span class="font-mono text-xs text-warm">04</span>
+                        <p class="mt-1 text-sm">点击每个分类为其设置封面</p>
+                    </li>
+                </ol>
+            </section>
+
+            <section class="mb-10">
+                <label
+                    id="dropzone"
+                    for="file-input"
+                    class="block border-2 border-dashed border-line rounded-xl bg-paper-deep hover:bg-paper-deeper hover:border-accent transition-colors cursor-pointer px-6 py-10 text-center"
+                >
+                    <input
+                        id="file-input"
+                        type="file"
+                        accept=".html,text/html"
+                        class="hidden"
+                    />
+                    <p class="font-display text-lg text-ink">
+                        拖拽书签文件到此处
+                    </p>
+                    <p class="text-sm text-ink-soft mt-1">
+                        或点击选择
+                        <span class="font-mono text-xs">bookmarks.html</span>
+                    </p>
+                </label>
+                <p
+                    id="file-status"
+                    class="mt-2 text-sm text-ink-soft hidden"
+                ></p>
+            </section>
+
+            <section id="results" class="hidden">
+                <div
+                    class="mb-5 flex items-center justify-between flex-wrap gap-3"
+                >
+                    <p class="text-sm text-ink-soft">
+                        共解析出
+                        <span
+                            id="count-categories"
+                            class="font-mono text-ink font-medium"
+                            >0</span
+                        >
+                        个分类,
+                        <span
+                            id="count-bookmarks"
+                            class="font-mono text-ink font-medium"
+                            >0</span
+                        >
+                        条书签。
+                    </p>
+                </div>
+
+                <div id="tag-row" class="flex flex-wrap gap-2 mb-6"></div>
+                <div
+                    id="category-cover-panel"
+                    class="hidden mb-6 p-4 border border-line rounded-lg bg-paper-deep"
+                >
+                    <div class="flex items-center gap-2 mb-2">
+                        <div class="font-medium font-mono text-ink-soft">
+                            当前分类封面
+                        </div>
+                        <div class="text-accent-ink text-sm">
+                            URL必须为https开始的图片地址
+                        </div>
+                    </div>
+
+                    <input
+                        id="category-cover-input"
+                        class="bg-white px-2 py-2 rounded-md w-full text-sm border border-line focus:outline-none focus:border focus:border-accent"
+                        placeholder="请输入封面图片 URL"
+                    />
+                </div>
+
+                <div
+                    class="border border-line rounded-xl overflow-hidden bg-[#fbf9f4]"
+                >
+                    <div
+                        class="overflow-y-auto scroll-thin bg-[#fbf9f4]"
+                        style="max-height: 480px"
+                    >
+                        <table class="bookmark-table text-sm">
+                            <colgroup>
+                                <col style="width: 28%" />
+                                <col style="width: 40%" />
+                                <col style="width: 22%" />
+                                <col style="width: 10%" />
+                            </colgroup>
+                            <thead class="sticky top-0 bg-paper-deeper z-10">
+                                <tr
+                                    class="text-left text-xs uppercase tracking-wider text-ink-soft font-mono"
+                                >
+                                    <th class="px-4 py-3">标题</th>
+                                    <th class="px-4 py-3">URL</th>
+                                    <th class="px-4 py-3">分类</th>
+                                    <th class="px-4 py-3 text-right">操作</th>
+                                </tr>
+                            </thead>
+                            <tbody id="bookmark-tbody"></tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div
+                    class="mt-8 bg-paper-deep border border-line rounded-xl p-5"
+                >
+                    <div class="flex items-end gap-3 mb-4">
+                        <button
+                            id="submit-btn"
+                            class="px-5 py-2 rounded-lg cursor-pointer bg-accent text-white text-sm font-medium hover:bg-accent-ink transition-colors whitespace-nowrap"
+                        >
+                            提交
+                        </button>
+                    </div>
+                    <p id="submit-status" class="text-sm mb-3 hidden"></p>
+                    <details>
+                        <summary
+                            class="text-sm text-ink-soft cursor-pointer select-none flex items-center gap-2"
+                        >
+                            <span>▶︎查看 JSON 预览</span>
+                            <button
+                                id="copy-btn"
+                                type="button"
+                                class="text-xs cursor-pointer text-accent-ink underline hover:text-accent"
+                            >
+                                复制
+                            </button>
+                        </summary>
+                        <pre
+                            id="json-preview"
+                            class="mt-3 text-xs font-mono bg-white border border-line rounded-lg p-4 overflow-auto max-h-64 scroll-thin"
+                        ></pre>
+                    </details>
+                </div>
+            </section>
+        </div>
+
+        <script>
+            (function () {
+                const dropzone = document.getElementById("dropzone");
+                const fileInput = document.getElementById("file-input");
+                const fileStatus = document.getElementById("file-status");
+                const results = document.getElementById("results");
+                const tbody = document.getElementById("bookmark-tbody");
+                const tagRow = document.getElementById("tag-row");
+                const countCats = document.getElementById("count-categories");
+                const countBms = document.getElementById("count-bookmarks");
+                const jsonPreview = document.getElementById("json-preview");
+                const submitBtn = document.getElementById("submit-btn");
+                const copyBtn = document.getElementById("copy-btn");
+                const submitStatus = document.getElementById("submit-status");
+                const backendUrl = "/manage/bookmark/import";
+
+                let bookmarks = [];
+                let allCategories = [];
+                let activeCategory = null;
+                let categoryCoverMap = {};
+
+                ["dragover", "dragenter"].forEach((evt) =>
+                    dropzone.addEventListener(evt, (e) => {
+                        e.preventDefault();
+                        dropzone.classList.add(
+                            "border-accent",
+                            "bg-paper-deeper",
+                        );
+                    }),
+                );
+                ["dragleave", "drop"].forEach((evt) =>
+                    dropzone.addEventListener(evt, (e) => {
+                        e.preventDefault();
+                        dropzone.classList.remove(
+                            "border-accent",
+                            "bg-paper-deeper",
+                        );
+                    }),
+                );
+                dropzone.addEventListener("drop", (e) => {
+                    const f = e.dataTransfer.files && e.dataTransfer.files[0];
+                    if (f) handleFile(f);
+                });
+                fileInput.addEventListener("change", (e) => {
+                    const f = e.target.files && e.target.files[0];
+                    if (f) handleFile(f);
+                });
+
+                function handleFile(file) {
+                    fileStatus.textContent = `正在解析 ${file.name} …`;
+                    fileStatus.classList.remove("hidden");
+                    const reader = new FileReader();
+                    reader.onload = () => {
+                        try {
+                            const parsed = parseBookmarksHtml(reader.result);
+                            bookmarks = parsed;
+                            fileStatus.textContent = `已解析 ${file.name} · 共 ${bookmarks.length} 条书签`;
+                            renderAll();
+                        } catch (err) {
+                            console.error(err);
+                            fileStatus.textContent = `解析失败:${err.message}。请确认这是 Chrome 导出的书签 HTML 文件。`;
+                        }
+                    };
+                    reader.onerror = () => {
+                        fileStatus.textContent = "读取文件失败,请重试。";
+                    };
+                    reader.readAsText(file, "utf-8");
+                }
+
+                function parseBookmarksHtml(htmlText) {
+                    const doc = new DOMParser().parseFromString(
+                        htmlText,
+                        "text/html",
+                    );
+                    const allDls = Array.from(doc.querySelectorAll("dl"));
+                    if (allDls.length === 0)
+                        throw new Error(
+                            "未找到书签结构(<DL>),不是有效的书签文件",
+                        );
+
+                    function findH3In(dt) {
+                        return (
+                            dt.querySelector(":scope > h3") ||
+                            dt.querySelector("h3")
+                        );
+                    }
+
+                    function categoryForDl(dl) {
+                        const parent = dl.parentElement;
+                        if (parent && parent.tagName === "DT") {
+                            const h3 = findH3In(parent);
+                            if (h3) return h3.textContent.trim();
+                        }
+                        let prev = dl.previousElementSibling;
+                        while (prev) {
+                            if (prev.tagName === "DT") {
+                                const h3 = findH3In(prev);
+                                if (h3) return h3.textContent.trim();
+                            }
+                            if (prev.tagName === "H3")
+                                return prev.textContent.trim();
+                            prev = prev.previousElementSibling;
+                        }
+
+                        if (parent) {
+                            const grandDl = parent.closest("dl");
+                            if (grandDl && grandDl !== dl)
+                                return categoryForDl(grandDl);
+                        }
+                        return null;
+                    }
+
+                    const out = [];
+                    let idSeq = 0;
+                    const seen = new Set();
+
+                    allDls.forEach((dl) => {
+                        const category = categoryForDl(dl) || "未分类";
+                        Array.from(dl.children).forEach((child) => {
+                            if (child.tagName !== "DT") return;
+                            const a =
+                                child.querySelector(":scope > a") ||
+                                child.querySelector("a");
+                            const nestedDl = child.querySelector(":scope > dl");
+                            if (!a) return;
+                            if (a.closest("dl") !== dl && nestedDl) return;
+                            const href = a.getAttribute("href") || "";
+                            const title = a.textContent.trim();
+                            if (!href) return;
+                            const key = href + "\u0000" + title;
+                            if (seen.has(key)) return;
+                            seen.add(key);
+                            out.push({
+                                id: "bm_" + idSeq++,
+                                title: title || href,
+                                url: href,
+                                category,
+                            });
+                        });
+                    });
+
+                    if (out.length === 0)
+                        throw new Error("解析出 0 条书签,文件内容可能为空");
+                    return out;
+                }
+
+                function renderAll() {
+                    results.classList.remove("hidden");
+                    rebuildCategoryList();
+                    renderTags();
+                    renderTable();
+                    updateCounts();
+                    updateJsonPreview();
+                }
+
+                function rebuildCategoryList() {
+                    const set = new Set(bookmarks.map((b) => b.category));
+                    allCategories = Array.from(set).sort((a, b) =>
+                        a.localeCompare(b, "zh"),
+                    );
+                }
+
+                function renderTags() {
+                    tagRow.innerHTML = "";
+                    const makeTag = (label, count, isAll) => {
+                        const btn = document.createElement("button");
+                        const isActive = isAll
+                            ? activeCategory === null
+                            : activeCategory === label;
+                        btn.className = [
+                            "px-3 py-1.5 rounded-full text-xs font-mono border transition-colors",
+                            isActive
+                                ? "bg-accent text-white border-accent"
+                                : "bg-white cursor-pointer text-ink-soft border-line hover:border-accent hover:text-accent-ink",
+                        ].join(" ");
+                        btn.textContent = isAll
+                            ? `全部 (${count})`
+                            : `${label} (${count})`;
+                        btn.addEventListener("click", () => {
+                            activeCategory = isAll ? null : label;
+                            console.log(
+                                "activeCategory",
+                                activeCategory,
+                                isAll,
+                            );
+                            renderTags();
+                            renderTable();
+                            renderCategoryPanel();
+                        });
+                        return btn;
+                    };
+                    tagRow.appendChild(makeTag(null, bookmarks.length, true));
+                    allCategories.forEach((cat) => {
+                        const count = bookmarks.filter(
+                            (b) => b.category === cat,
+                        ).length;
+                        tagRow.appendChild(makeTag(cat, count, false));
+                    });
+                }
+
+                function renderCategoryPanel() {
+                    const panel = document.getElementById(
+                        "category-cover-panel",
+                    );
+                    const input = document.getElementById(
+                        "category-cover-input",
+                    );
+                    if (!activeCategory) {
+                        panel.classList.add("hidden");
+                        input.value = "";
+                        input.oninput = null;
+                        return;
+                    }
+
+                    panel.classList.remove("hidden");
+
+                    input.value = categoryCoverMap[activeCategory] ?? "";
+
+                    input.oninput = null;
+
+                    input.oninput = (e) => {
+                        categoryCoverMap[activeCategory] = e.target.value;
+                        updateJsonPreview();
+                    };
+                }
+
+                function renderTable() {
+                    tbody.innerHTML = "";
+                    const rows = activeCategory
+                        ? bookmarks.filter((b) => b.category === activeCategory)
+                        : bookmarks;
+
+                    rows.forEach((bm) => {
+                        const tr = document.createElement("tr");
+                        tr.className = "catalog-row";
+
+                        const tdTitle = document.createElement("td");
+                        tdTitle.className = "px-4 py-2 align-top";
+                        const titleInput = document.createElement("input");
+                        titleInput.value = bm.title;
+                        titleInput.className = "cell-input font-display";
+                        titleInput.addEventListener("input", (e) => {
+                            bm.title = e.target.value;
+                            updateJsonPreview();
+                        });
+                        tdTitle.appendChild(titleInput);
+
+                        const tdUrl = document.createElement("td");
+                        tdUrl.className = "px-4 py-2 align-top";
+                        const urlInput = document.createElement("input");
+                        urlInput.value = bm.url;
+                        urlInput.className =
+                            "cell-input font-mono text-xs text-ink-soft";
+                        urlInput.addEventListener("input", (e) => {
+                            bm.url = e.target.value;
+                            updateJsonPreview();
+                        });
+                        tdUrl.appendChild(urlInput);
+
+                        const tdCat = document.createElement("td");
+                        tdCat.className = "px-4 py-2 align-top";
+                        const select = document.createElement("select");
+                        select.className = "cell-input text-sm bg-transparent";
+                        allCategories.forEach((cat) => {
+                            const opt = document.createElement("option");
+                            opt.value = cat;
+                            opt.textContent = cat;
+                            if (cat === bm.category) opt.selected = true;
+                            select.appendChild(opt);
+                        });
+                        const newOpt = document.createElement("option");
+                        newOpt.value = "__new__";
+                        newOpt.textContent = "+ 新分类…";
+                        select.appendChild(newOpt);
+                        select.addEventListener("change", (e) => {
+                            if (e.target.value === "__new__") {
+                                const name = prompt("新分类名称:");
+                                if (name && name.trim()) {
+                                    bm.category = name.trim();
+                                    rebuildCategoryList();
+                                    renderTags();
+                                    renderTable();
+                                    updateCounts();
+                                } else {
+                                    e.target.value = bm.category;
+                                }
+                            } else {
+                                bm.category = e.target.value;
+                                updateJsonPreview();
+                            }
+                        });
+                        tdCat.appendChild(select);
+
+                        const tdDel = document.createElement("td");
+                        tdDel.className = "px-4 py-2 align-top text-right";
+                        const delBtn = document.createElement("button");
+                        delBtn.textContent = "删除";
+                        delBtn.className =
+                            "text-xs font-mono text-danger hover:text-danger px-2 py-1 rounded hover:bg-danger-soft transition-colors";
+                        delBtn.addEventListener("click", () => {
+                            bookmarks = bookmarks.filter((b) => b.id !== bm.id);
+                            rebuildCategoryList();
+                            renderTags();
+                            renderTable();
+                            updateCounts();
+                            updateJsonPreview();
+                        });
+                        tdDel.appendChild(delBtn);
+
+                        tr.append(tdTitle, tdUrl, tdCat, tdDel);
+                        tbody.appendChild(tr);
+                    });
+                }
+
+                function updateCounts() {
+                    countCats.textContent = allCategories.length;
+                    countBms.textContent = bookmarks.length;
+                }
+
+                function buildPayload() {
+                    return {
+                        categories: allCategories,
+                        bookmarks: bookmarks.map((b) => ({
+                            title: b.title,
+                            url: b.url,
+                            category: b.category,
+                            cover_image: categoryCoverMap[b.category] || null,
+                        })),
+                    };
+                }
+
+                function updateJsonPreview() {
+                    jsonPreview.textContent = JSON.stringify(
+                        buildPayload(),
+                        null,
+                        2,
+                    );
+                }
+
+                copyBtn.addEventListener("click", async () => {
+                    try {
+                        await navigator.clipboard.writeText(
+                            JSON.stringify(buildPayload(), null, 2),
+                        );
+                        flashStatus("已复制 JSON 到剪贴板", false);
+                    } catch {
+                        flashStatus("复制失败,请手动从预览框中选取", true);
+                    }
+                });
+
+                submitBtn.addEventListener("click", async () => {
+                    for (const cat of allCategories) {
+                        let cover = categoryCoverMap[cat]?.trim();
+                        if (!cover || !cover.startsWith("https")) {
+                            flashStatus(
+                                `分类「${cat}」未设置封面或封面url不正确`,
+                                true,
+                            );
+                            activeCategory = cat;
+                            renderTags();
+                            renderTable();
+                            renderCategoryPanel();
+
+                            return;
+                        }
+                    }
+                    const payload = buildPayload();
+                    submitBtn.disabled = true;
+                    submitBtn.textContent = "提交中…";
+                    try {
+                        const res = await fetch(backendUrl, {
+                            method: "POST",
+                            headers: { "Content-Type": "application/json" },
+                            body: JSON.stringify(payload),
+                        });
+                        console.log(res);
+                        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+                        flashStatus("提交成功", false);
+                        location.href = "/";
+                    } catch (err) {
+                        flashStatus(`提交失败:${err.message}`, true);
+                    } finally {
+                        submitBtn.disabled = false;
+                        submitBtn.textContent = "提交";
+                    }
+                });
+
+                function flashStatus(msg, isError) {
+                    submitStatus.textContent = msg;
+                    submitStatus.className =
+                        "text-sm mb-3 " +
+                        (isError ? "text-danger" : "text-accent-ink");
+                    submitStatus.classList.remove("hidden");
+                }
+            })();
+        </script>
+    </body>
+</html>
