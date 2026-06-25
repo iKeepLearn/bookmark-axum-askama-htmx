@@ -2,6 +2,10 @@
 
 一个基于 Rust 生态构建的高性能、轻量级书签管理 Web 应用。
 
+> [在线体验](https://bks.artista.cc)
+> * **用户名**：`guest`
+> * **密码**：`guest`
+
 ## 🚀 特性
 
 * **极致性能**：基于 Rust 的 `axum` 框架与 PostgreSQL 构建，内存占用低、响应速度快。

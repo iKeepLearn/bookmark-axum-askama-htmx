@@ -2,6 +2,10 @@
 
 A high-performance, lightweight bookmark manager built on the Rust ecosystem.
 
+> [online site](https://bks.artista.cc)
+> * **用户名**：`guest`
+> * **密码**：`guest`
+
 ## 🚀 Features
 
 * **Blazing performance**: Built with the Rust `axum` framework and PostgreSQL — low memory footprint, fast response times.
