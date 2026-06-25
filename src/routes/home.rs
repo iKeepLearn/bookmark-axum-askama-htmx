@@ -1,3 +1,4 @@
+use super::SessionUser;
 use crate::domain::bookmark::models::{Bookmark, CategoryWithBookmarkCount, QueryArgs, Tag};
 use crate::domain::bookmark::services::BookmarkService;
 use crate::infra::database::bookmark::PgBookmarkRepository;
@@ -7,8 +8,7 @@ use axum::extract::{Query, State};
 use axum::response::IntoResponse;
 use http::HeaderMap;
 use serde::Deserialize;
-
-use super::SessionUser;
+use tracing::error;
 
 #[derive(Debug)]
 pub struct BookmarkItemTemplate {
@@ -216,7 +216,10 @@ pub async fn get_home(
                 })
             }
         }
-        Err(_) => e500("获取导航失败".to_string()),
+        Err(err) => {
+            error!("Failed to get bookmarks: {}", err);
+            e500("获取导航失败".to_string())
+        }
     }
 }
 

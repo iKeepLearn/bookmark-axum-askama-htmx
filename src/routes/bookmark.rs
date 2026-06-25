@@ -10,6 +10,8 @@ use axum::extract::{Query, State};
 use axum::response::{Html, IntoResponse, Redirect};
 use axum_extra::extract::Form;
 use serde::Deserialize;
+use serde_json::json;
+use tracing::{error, instrument};
 
 #[derive(Debug, Template)]
 #[template(path = "pages/add_bookmark.html")]
@@ -186,6 +188,7 @@ pub async fn add_bookmark_form(
     })
 }
 
+#[instrument(skip_all)]
 pub async fn add_bookmark(
     State(service): State<BookmarkService<PgBookmarkRepository>>,
     Form(form): Form<AddBookmarkForm>,
@@ -214,7 +217,10 @@ pub async fn add_bookmark(
                     success_msg: Some("添加成功".into()),
                 });
             }
-            Err(_) => errors.general = Some("添加失败，请稍后重试".into()),
+            Err(e) => {
+                error!("add bookmark error {}", e);
+                errors.general = Some("添加失败，请稍后重试".into());
+            }
         }
     }
 
@@ -319,7 +325,10 @@ pub async fn get_edit_form(
 ) -> impl IntoResponse {
     let nav_detail = match service.get_bookmark_by_id(q.id).await {
         Ok(n) => n,
-        Err(_) => return Redirect::to("/").into_response(),
+        Err(err) => {
+            error!("Failed to get bookmark: {}", err);
+            return Redirect::to("/").into_response();
+        }
     };
     let (categories, tags) = service.get_categories_tags().await;
     let selected_tag_ids = service.get_bookmark_tag_ids(q.id).await.unwrap_or_default();
@@ -349,7 +358,10 @@ pub async fn edit_bookmark(
     if !has_errors {
         match service.update_bookmark(form.clone().into()).await {
             Ok(_) => return Redirect::to("/").into_response(),
-            Err(_) => errors.general = Some("修改失败，请稍后重试".into()),
+            Err(err) => {
+                error!("Failed to update bookmark: {}", err);
+                errors.general = Some("修改失败，请稍后重试".into());
+            }
         }
     }
 
@@ -384,5 +396,5 @@ pub async fn bookmark_import(
     let _ = service
         .batch_add_bookmarks(payload.categories, bookmarks)
         .await;
-    Redirect::to("/")
+    Json(json!({"success":true}))
 }

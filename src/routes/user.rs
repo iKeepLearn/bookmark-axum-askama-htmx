@@ -9,6 +9,7 @@ use axum::extract::State;
 use secrecy::{ExposeSecret, SecretString};
 use serde::{Deserialize, Serialize};
 use tower_sessions::Session;
+use tracing::error;
 
 const FLASH_KEY: &str = "flash_messages";
 
@@ -105,7 +106,10 @@ pub async fn login_submit(
 
                 return PageResult::Redirect("/");
             }
-            Err(_) => errors.general = Some("用户名或密码错误".into()),
+            Err(err) => {
+                error!("Failed to authenticate: {}", err);
+                errors.general = Some("用户名或密码错误".into())
+            }
         }
     }
 

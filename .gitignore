@@ -4,3 +4,4 @@ node_modules
 configuration/local.yaml
 configuration/production.yaml
 .env
+bookmarks.html

@@ -651,8 +651,10 @@
                             headers: { "Content-Type": "application/json" },
                             body: JSON.stringify(payload),
                         });
-                        console.log(res);
+
                         if (!res.ok) throw new Error(`HTTP ${res.status}`);
+                        const body = await res.json();
+                        if (!body.success) throw new Error(body.message);
                         flashStatus("提交成功", false);
                         location.href = "/";
                     } catch (err) {
