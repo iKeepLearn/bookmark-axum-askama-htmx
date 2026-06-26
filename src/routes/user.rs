@@ -1,8 +1,11 @@
 use super::PageResult;
+use super::extractor::i18n::Locale;
 use crate::domain::user::models::{Credentials, UserInfo};
 use crate::domain::user::services::UserService;
 use crate::infra::auth_provider::local::LocalAuthProvider;
 use crate::infra::database::user::PgUserRepository;
+use crate::utils::askama::filters;
+use crate::utils::i18n::t_for;
 use askama::Template;
 use axum::Form;
 use axum::extract::State;
@@ -81,6 +84,7 @@ pub async fn login_form(session: Session) -> PageResult<LoginTemplate, &'static 
 
 pub async fn login_submit(
     session: Session,
+    locale: Locale,
     State(service): State<UserService<PgUserRepository>>,
     State(auth_provider): State<LocalAuthProvider>,
     Form(form): Form<LoginForm>,
@@ -88,10 +92,10 @@ pub async fn login_submit(
     let mut errors = LoginErrors::default();
 
     if form.username.trim().is_empty() {
-        errors.username = Some("用户名不能为空".into());
+        errors.username = Some(t_for(&locale.lang, "username_required"));
     }
     if form.password.expose_secret().is_empty() {
-        errors.password = Some("密码不能为空".into());
+        errors.password = Some(t_for(&locale.lang, "password_required"));
     }
 
     if errors.username.is_none() && errors.password.is_none() {
@@ -108,7 +112,7 @@ pub async fn login_submit(
             }
             Err(err) => {
                 error!("Failed to authenticate: {}", err);
-                errors.general = Some("用户名或密码错误".into())
+                errors.general = Some(t_for(&locale.lang, "invalid_credentials"))
             }
         }
     }
@@ -132,6 +136,7 @@ pub async fn changepwd_form() -> PageResult<ChangePwdTemplate, &'static str> {
 pub async fn changepwd_submit(
     session: Session,
     user: SessionUser,
+    locale: Locale,
     State(service): State<UserService<PgUserRepository>>,
     State(auth_provider): State<LocalAuthProvider>,
     Form(form): Form<ChangePwdForm>,
@@ -139,22 +144,22 @@ pub async fn changepwd_submit(
     // 校验字段
     if form.current_password.expose_secret().is_empty() {
         return PageResult::RenderTemplate(ChangePwdTemplate {
-            msg: "当前密码不能为空".into(),
+            msg: t_for(&locale.lang, "current_password_required"),
         });
     }
     if form.new_password.expose_secret().is_empty() {
         return PageResult::RenderTemplate(ChangePwdTemplate {
-            msg: "新密码不能为空".into(),
+            msg: t_for(&locale.lang, "new_password_required"),
         });
     }
     if form.new_password_check.expose_secret().is_empty() {
         return PageResult::RenderTemplate(ChangePwdTemplate {
-            msg: "请确认新密码".into(),
+            msg: t_for(&locale.lang, "confirm_password_required"),
         });
     }
     if form.new_password.expose_secret() != form.new_password_check.expose_secret() {
         return PageResult::RenderTemplate(ChangePwdTemplate {
-            msg: "两次输入的新密码不一致".into(),
+            msg: t_for(&locale.lang, "password_mismatch"),
         });
     }
 
@@ -174,7 +179,7 @@ pub async fn changepwd_submit(
             PageResult::Redirect("/login")
         }
         Err(_) => PageResult::RenderTemplate(ChangePwdTemplate {
-            msg: "当前密码错误".into(),
+            msg: t_for(&locale.lang, "current_password_wrong"),
         }),
     }
 }

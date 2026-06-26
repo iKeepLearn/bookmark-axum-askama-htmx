@@ -1,4 +1,4 @@
-{% extends "layouts/sidebar.html" %} {% block title %}Home{% endblock title %}
+{% extends "layouts/sidebar.html" %} {% block title %}{{ "page-title-home"|t }}{% endblock title %}
 {% block content %}
 <!-- 移动端顶栏 -->
 <header
@@ -18,7 +18,7 @@
         >
             <path d="M3 6h18M3 12h18M3 18h18" />
         </svg>
-        菜单
+        {{ "home-mobile-menu"|t }}
     </button>
 
     <!-- 移动端搜索框替换“书签库”位置 -->
@@ -28,7 +28,7 @@
                 type="text"
                 name="q"
                 value="{{search_keyword}}"
-                placeholder="搜索书签..."
+                placeholder="{{ "home-search-placeholder"|t }}"
                 class="w-full px-3 py-1.5 bg-paper-deep border border-line rounded-lg text-sm text-ink placeholder:text-ink-faint focus:outline-none focus:ring-2 focus:ring-accent focus:border-accent transition-colors"
             />
             {% if let Some(cid) = selected_category %}
@@ -42,6 +42,18 @@
             {% endif %}
         </div>
     </form>
+    <div class="">
+        <select class="text-[11.5px] px-2.5 py-2 rounded-md bg-paper-deep text-ink-soft border border-transparent focus:border-accent"
+            onchange="location.href=this.value">
+                <option value="/i18n/zh-CN" {% if "zh-CN"|is_current_lang %}selected{% endif %}>
+                    中文
+                </option>
+
+                <option value="/i18n/en-US" {% if "en-US"|is_current_lang %}selected{% endif %}>
+                    English
+                </option>
+        </select>
+    </div>
 </header>
 
 <div class="flex h-screen overflow-hidden pt-13 md:pt-0">
@@ -62,11 +74,11 @@
             <div class="flex items-baseline gap-2 mb-7">
                 <span
                     class="font-display font-bold text-[19px] tracking-tight text-ink"
-                    >书签库</span
+                    >{{ "brand-name"|t }}</span
                 >
                 <span
                     class="font-mono text-[10px] uppercase tracking-[0.08em] text-ink-faint"
-                    >archive</span
+                    >{{ "brand-tagline"|t }}</span
                 >
             </div>
 
@@ -75,7 +87,7 @@
                 <div
                     class="font-mono text-[10.5px] uppercase tracking-widest text-ink-faint mb-2.5 pl-0.5"
                 >
-                    分类
+                    {{ "home-category-section-title"|t }}
                 </div>
                 <div class="flex flex-col gap-px">
                     <a
@@ -86,7 +98,7 @@
                         <span
                             class="absolute left-0 top-1/2 -translate-y-1/2 w-0.75 h-3.5 rounded bg-accent"
                         ></span>
-                        {% endif %} 全部
+                        {% endif %} {{ "home-category-all"|t }}
                         <span class="font-mono text-[11px] opacity-70"
                             >{{total_bookmarks()}}</span
                         >
@@ -114,7 +126,7 @@
                 <div
                     class="font-mono text-[10.5px] uppercase tracking-widest text-ink-faint mb-2.5 pl-0.5"
                 >
-                    标签
+                    {{ "home-tag-section-title"|t }}
                 </div>
                 <div class="flex flex-wrap gap-1.5">
                     {% for tag in tags %}
@@ -127,6 +139,7 @@
                     {% endfor %}
                 </div>
             </div>
+
         </div>
 
         <!-- 用户菜单（桌面端显示） -->
@@ -158,19 +171,19 @@
                     href="/manage/bookmark"
                     class="flex items-center px-3 h-9 leading-none text-[13px] text-ink-soft hover:bg-paper-deeper hover:text-ink transition-colors"
                 >
-                    添加书签
+                    {{ "usermenu-add-bookmark"|t }}
                 </a>
                 <a
                     href="/manage/bookmark/import"
                     class="flex items-center px-3 h-9 leading-none text-[13px] text-ink-soft hover:bg-paper-deeper hover:text-ink transition-colors border-t border-line"
                 >
-                    导入书签
+                    {{ "usermenu-import-bookmark"|t }}
                 </a>
                 <a
                     href="/manage/changepwd"
                     class="flex items-center px-3 h-9 leading-none text-[13px] text-ink-soft hover:bg-paper-deeper hover:text-ink transition-colors border-t border-line"
                 >
-                    修改密码
+                    {{ "usermenu-change-password"|t }}
                 </a>
                 {% endif %}
                 <form name="logoutForm" action="/manage/logout" method="post">
@@ -178,7 +191,7 @@
                         type="submit"
                         class="w-full cursor-pointer text-left px-3 h-9 leading-none text-[13px] text-danger hover:bg-danger hover:text-white transition-colors border-t border-line"
                     >
-                        退出
+                        {{ "usermenu-logout"|t }}
                     </button>
                 </form>
             </div>
@@ -195,7 +208,7 @@
                         type="text"
                         name="q"
                         value="{{search_keyword}}"
-                        placeholder="搜索书签..."
+                        placeholder="{{ "home-search-placeholder"|t }}"
                         class="w-48 px-4 py-2.5 bg-paper-deep border border-line rounded-lg text-sm text-ink placeholder:text-ink-faint focus:outline-none focus:ring-2 focus:ring-accent focus:border-accent transition-colors"
                     />
                     {% if let Some(cid) = selected_category %}
@@ -209,6 +222,18 @@
                     {% endif %}
                 </div>
             </form>
+            <div class="">
+                <select class="text-[11.5px] px-2.5 py-1 rounded-md bg-paper-deep text-ink-soft border border-transparent focus:border-accent"
+                    onchange="location.href=this.value">
+                        <option value="/i18n/zh-CN" {% if "zh-CN"|is_current_lang %}selected{% endif %}>
+                            中文
+                        </option>
+
+                        <option value="/i18n/en-US" {% if "en-US"|is_current_lang %}selected{% endif %}>
+                            English
+                        </option>
+                </select>
+            </div>
         </div>
 
         {{bookmarks|safe}}

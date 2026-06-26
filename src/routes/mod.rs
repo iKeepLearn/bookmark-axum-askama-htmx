@@ -1,12 +1,14 @@
 mod bookmark;
 mod home;
+mod i18n;
 mod image;
-mod middleware;
 mod user;
 
 pub mod extractor;
+pub mod middleware;
 
 use self::bookmark::bookmark_import;
+use self::i18n::set_lang;
 use crate::app::state::AppState;
 use crate::utils::render_template;
 use askama::Template;
@@ -37,7 +39,9 @@ impl<T: Template, S: Into<String>> IntoResponse for PageResult<T, S> {
 }
 
 pub fn public_routes() -> axum::Router<AppState> {
-    Router::new().route("/login", get(login_form).post(login_submit))
+    Router::new()
+        .route("/login", get(login_form).post(login_submit))
+        .route("/i18n/{lang}", get(set_lang))
 }
 
 pub fn protected_routes() -> axum::Router<AppState> {

@@ -1,6 +1,7 @@
+use crate::routes::middleware::i18n::locale_middleware;
 use crate::routes::{protected_routes, public_routes};
 use crate::utils::e404;
-use axum::Router;
+use axum::{Router, middleware};
 use http::{Response, StatusCode};
 use std::time::Duration as StdDuration;
 use time::Duration;
@@ -85,7 +86,8 @@ pub async fn create_app(config: Settings) -> Router {
                     StdDuration::from_secs(10),
                 ))
                 .layer(CorsLayer::permissive())
-                .layer(session_layer),
+                .layer(session_layer)
+                .layer(middleware::from_fn(locale_middleware)),
         )
         .with_state(app_state)
 }

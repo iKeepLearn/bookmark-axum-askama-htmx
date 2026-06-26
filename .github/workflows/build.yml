@@ -68,7 +68,7 @@ jobs:
         run: |
           cp target/release/${{ env.APP_NAME }} .
           cp migrations/20260624051018_init.sql ./ddl.sql
-          zip -r ${{ env.APP_NAME }}-linux-x86_64.zip ${{ env.APP_NAME }} configuration public ddl.sql bookmark.service nginx.conf static
+          zip -r ${{ env.APP_NAME }}-linux-x86_64.zip ${{ env.APP_NAME }} configuration public ddl.sql bookmark.service nginx.conf static locales
 
       # 步骤 2：将提取到的 body 绑定到 Release 中
       - name: Create Release and Upload Asset (Tags only)

@@ -8,7 +8,6 @@ where
     type Rejection = (axum::http::StatusCode, String);
 
     async fn from_request_parts(parts: &mut Parts, _state: &S) -> Result<Self, Self::Rejection> {
-        // 从 request extensions 里取
         parts
             .extensions
             .get::<SessionUser>()

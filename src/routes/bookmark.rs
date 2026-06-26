@@ -1,8 +1,11 @@
+use super::extractor::i18n::Locale;
 use crate::domain::bookmark::models::{
     BookmarkAdd, BookmarkBatchAdd, BookmarkUpdate, Category, Tag,
 };
 use crate::domain::bookmark::services::BookmarkService;
 use crate::infra::database::bookmark::PgBookmarkRepository;
+use crate::utils::askama::filters;
+use crate::utils::i18n::t_for;
 use crate::utils::{e500, render_template};
 use askama::Template;
 use axum::Json;
@@ -12,6 +15,7 @@ use axum_extra::extract::Form;
 use serde::Deserialize;
 use serde_json::json;
 use tracing::{error, instrument};
+use unic_langid::LanguageIdentifier;
 
 #[derive(Debug, Template)]
 #[template(path = "pages/add_bookmark.html")]
@@ -144,20 +148,23 @@ pub struct ImportPayload {
     pub bookmarks: Vec<BookmarkImportForm>,
 }
 
-fn validate_bookmark_form(form: &ValidateForm) -> (BookmarkFormErrors, bool) {
+fn validate_bookmark_form(
+    lang: &LanguageIdentifier,
+    form: &ValidateForm,
+) -> (BookmarkFormErrors, bool) {
     let mut errors = BookmarkFormErrors::default();
 
     if (&form.title.trim()).is_empty() {
-        errors.title = Some("标题不能为空".into());
+        errors.title = Some(t_for(lang, "title_required"));
     }
     if (&form.url.trim()).is_empty() {
-        errors.url = Some("URL不能为空".into());
+        errors.url = Some(t_for(lang, "url_required"));
     }
     if (&form.cover_image.trim()).is_empty() {
-        errors.cover_image = Some("封面图片不能为空".into());
+        errors.cover_image = Some(t_for(lang, "cover_image_required"));
     }
     if form.category_id.is_none() {
-        errors.category_id = Some("请选择分类".into());
+        errors.category_id = Some(t_for(lang, "category_required"));
     }
 
     let has_errors = errors.title.is_some()
@@ -190,12 +197,13 @@ pub async fn add_bookmark_form(
 
 #[instrument(skip_all)]
 pub async fn add_bookmark(
+    locale: Locale,
     State(service): State<BookmarkService<PgBookmarkRepository>>,
     Form(form): Form<AddBookmarkForm>,
 ) -> impl IntoResponse {
     let (categories, mut tags) = service.get_categories_tags().await;
 
-    let (mut errors, has_errors) = validate_bookmark_form(&form.clone().into());
+    let (mut errors, has_errors) = validate_bookmark_form(&locale.lang, &form.clone().into());
 
     if !has_errors {
         match service.add_bookmark(form.clone().into()).await {
@@ -214,12 +222,12 @@ pub async fn add_bookmark(
                     category_id,
                     selected_tag_ids: vec![],
                     new_tags: String::new(),
-                    success_msg: Some("添加成功".into()),
+                    success_msg: Some(t_for(&locale.lang, "add_success")),
                 });
             }
             Err(e) => {
                 error!("add bookmark error {}", e);
-                errors.general = Some("添加失败，请稍后重试".into());
+                errors.general = Some(t_for(&locale.lang, "add_failure"));
             }
         }
     }
@@ -350,17 +358,18 @@ pub async fn get_edit_form(
 }
 
 pub async fn edit_bookmark(
+    locale: Locale,
     State(service): State<BookmarkService<PgBookmarkRepository>>,
     Form(form): Form<EditBookmarkForm>,
 ) -> impl IntoResponse {
-    let (mut errors, has_errors) = validate_bookmark_form(&form.clone().into());
+    let (mut errors, has_errors) = validate_bookmark_form(&locale.lang, &form.clone().into());
     let (categories, tags) = service.get_categories_tags().await;
     if !has_errors {
         match service.update_bookmark(form.clone().into()).await {
             Ok(_) => return Redirect::to("/").into_response(),
             Err(err) => {
                 error!("Failed to update bookmark: {}", err);
-                errors.general = Some("修改失败，请稍后重试".into());
+                errors.general = Some(t_for(&locale.lang, "update_failed"));
             }
         }
     }

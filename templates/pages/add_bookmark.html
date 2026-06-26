@@ -1,5 +1,6 @@
-{% extends "layouts/base.html" %} {% block title %}Add Nav Item{% endblock title
-%} {% block head %} {{ super() }}
+{% extends "layouts/base.html" %} {% block title
+%}{{"bookmark-add-heading"|t}}{% endblock title %} {% block head %} {{ super()
+}}
 <style type="text/css">
     .upload-modal {
         display: none;
@@ -33,14 +34,16 @@
 {% endif %}
 
 <div class="bg-white sm:w-lg border border-line rounded-xl shadow-sm p-6">
-    <div class="font-display font-semibold text-lg text-ink mb-5">添加书签</div>
+    <div class="font-display font-semibold text-lg text-ink mb-5">
+        {{"bookmark-add-heading"|t}}
+    </div>
 
     <form id="nav-form" action="/manage/bookmark" method="post">
         <div class="flex flex-col gap-5">
             <div class="w-full">
                 <input
                     type="text"
-                    placeholder="title"
+                    placeholder='{{"bookmark-title-placeholder"|t}}'
                     name="title"
                     value="{{ title }}"
                     class="px-3.5 py-2.5 border rounded-lg w-full text-sm text-ink placeholder:text-ink-faint focus:outline-none focus:ring-2 focus:ring-accent focus:border-accent transition-colors {% if errors.title.is_some() %}border-danger{% else %}border-line{% endif %}"
@@ -53,7 +56,7 @@
             <div class="w-full">
                 <input
                     type="text"
-                    placeholder="url"
+                    placeholder='{{"bookmark-url-placeholder"|t}}'
                     name="url"
                     value="{{ url }}"
                     class="px-3.5 py-2.5 border rounded-lg w-full text-sm text-ink placeholder:text-ink-faint focus:outline-none focus:ring-2 focus:ring-accent focus:border-accent transition-colors {% if errors.url.is_some() %}border-danger{% else %}border-line{% endif %}"
@@ -70,7 +73,7 @@
                         type="text"
                         id="cover_image"
                         name="cover_image"
-                        placeholder="cover image"
+                        placeholder='{{"bookmark-cover-image-placeholder"|t}}'
                         value="{{ cover_image }}"
                         class="flex-1 px-3.5 py-2.5 border rounded-lg text-sm text-ink placeholder:text-ink-faint focus:outline-none focus:ring-2 focus:ring-accent focus:border-accent transition-colors {% if errors.cover_image.is_some() %}border-danger{% else %}border-line{% endif %}"
                         required
@@ -121,7 +124,7 @@
             <div class="w-full">
                 <input
                     type="text"
-                    placeholder="新增标签（逗号分隔）"
+                    placeholder='{{"bookmark-new-tags-placeholder"|t}}'
                     name="new_tags"
                     value="{{ new_tags }}"
                     class="px-3.5 py-2.5 border border-line rounded-lg w-full text-sm text-ink placeholder:text-ink-faint focus:outline-none focus:ring-2 focus:ring-accent focus:border-accent transition-colors mb-2"
@@ -160,7 +163,7 @@
                     id="desc"
                     rows="3"
                     onInput="this.parentNode.dataset.clonedVal = this.value"
-                    placeholder="desc"
+                    placeholder='{{"bookmark-desc-placeholder"|t}}'
                 >
 {{ desc }}</textarea
                 >
@@ -169,7 +172,7 @@
                 type="submit"
                 class="px-4 py-2.5 inline-flex items-center justify-center bg-accent text-white font-medium text-sm rounded-lg shadow-sm hover:bg-accent-ink transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2"
             >
-                添加
+                {{"bookmark-add-submit"|t}}
             </button>
         </div>
     </form>
@@ -180,7 +183,7 @@
     <div class="bg-white rounded-xl shadow-xl p-6 w-full max-w-md">
         <div class="flex justify-between items-center mb-4">
             <h3 class="font-display font-semibold text-base text-ink">
-                Upload Cover Image
+                {{"upload-modal-title"|t}}
             </h3>
         </div>
 
@@ -203,8 +206,8 @@
                 />
 
                 <div class="w-full">
-                    <label class="block text-sm font-medium text-ink mb-1.5"
-                        >Select Image</label
+                    <label class="block text-sm font-medium text-ink mb-1.5">
+                        {{"upload-modal-select-image-label"|t}}</label
                     >
                     <input
                         type="file"
@@ -227,14 +230,14 @@
                     hx-on:click="closeUploadModal()"
                     class="px-4 py-2 text-ink-soft hover:bg-paper-deeper rounded-lg transition-colors"
                 >
-                    Cancel
+                    {{"upload-modal-cancel"|t}}
                 </button>
                 <button
                     type="submit"
                     id="submit-upload"
                     class="px-4 py-2 bg-accent text-white rounded-lg hover:bg-accent-ink transition-colors"
                 >
-                    Upload
+                    {{"upload-modal-submit"|t}}
                 </button>
             </div>
         </form>

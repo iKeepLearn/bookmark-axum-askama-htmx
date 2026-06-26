@@ -2,6 +2,7 @@ use super::SessionUser;
 use crate::domain::bookmark::models::{Bookmark, CategoryWithBookmarkCount, QueryArgs, Tag};
 use crate::domain::bookmark::services::BookmarkService;
 use crate::infra::database::bookmark::PgBookmarkRepository;
+use crate::utils::askama::filters;
 use crate::utils::{e500, format_date_time, render_template};
 use askama::Template;
 use axum::extract::{Query, State};
