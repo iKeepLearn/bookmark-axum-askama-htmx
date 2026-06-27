@@ -1,4 +1,4 @@
-{% extends "layouts/sidebar.html" %} {% block title %}{{ "page-title-home"|t }}{% endblock title %}
+{% extends "layouts/sidebar.html" %}{% import "components/lang_select.html" as lang_select %} {% block title %}{{ "page-title-home"|t }}{% endblock title %}
 {% block content %}
 <!-- 移动端顶栏 -->
 <header
@@ -42,18 +42,7 @@
             {% endif %}
         </div>
     </form>
-    <div class="">
-        <select class="text-[11.5px] px-2.5 py-2 rounded-md bg-paper-deep text-ink-soft border border-transparent focus:border-accent"
-            onchange="location.href=this.value">
-                <option value="/i18n/zh-CN" {% if "zh-CN"|is_current_lang %}selected{% endif %}>
-                    中文
-                </option>
-
-                <option value="/i18n/en-US" {% if "en-US"|is_current_lang %}selected{% endif %}>
-                    English
-                </option>
-        </select>
-    </div>
+    {{lang_select::render(crate::utils::now_timestamp())}}
 </header>
 
 <div class="flex h-screen overflow-hidden pt-13 md:pt-0">
@@ -180,7 +169,7 @@
                     {{ "usermenu-import-bookmark"|t }}
                 </a>
                 <a
-                    href="/manage/changepwd"
+                    href="/manage/changepwd?t={{ crate::utils::now_timestamp() }}"
                     class="flex items-center px-3 h-9 leading-none text-[13px] text-ink-soft hover:bg-paper-deeper hover:text-ink transition-colors border-t border-line"
                 >
                     {{ "usermenu-change-password"|t }}
@@ -222,18 +211,7 @@
                     {% endif %}
                 </div>
             </form>
-            <div class="">
-                <select class="text-[11.5px] px-2.5 py-1 rounded-md bg-paper-deep text-ink-soft border border-transparent focus:border-accent"
-                    onchange="location.href=this.value">
-                        <option value="/i18n/zh-CN" {% if "zh-CN"|is_current_lang %}selected{% endif %}>
-                            中文
-                        </option>
-
-                        <option value="/i18n/en-US" {% if "en-US"|is_current_lang %}selected{% endif %}>
-                            English
-                        </option>
-                </select>
-            </div>
+            {{lang_select::render(crate::utils::now_timestamp())}}
         </div>
 
         {{bookmarks|safe}}

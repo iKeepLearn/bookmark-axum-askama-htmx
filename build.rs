@@ -21,7 +21,7 @@ fn main() {
     println!("cargo:rustc-env=BUILD_VERSION={commit_hash}");
 
     println!("cargo:rerun-if-env-changed=PROFILE");
-    println!("cargo:rerun-if-changed=templates/input.css");
+    println!("cargo:rerun-if-changed=templates");
     println!("cargo:rerun-if-changed=package.json");
 
     let project_root: PathBuf = env::var("CARGO_MANIFEST_DIR")

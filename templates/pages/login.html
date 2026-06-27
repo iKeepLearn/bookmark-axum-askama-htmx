@@ -1,17 +1,8 @@
-{% extends "layouts/base.html" %} {% block title %}{{ "page-title-login"|t }}{% endblock %} {% block
+{% extends "layouts/base.html" %} {% import "components/lang_select.html" as lang_select %} {% block title %}{{ "page-title-login"|t }}{% endblock %} {% block
 content %}
 <main class="flex flex-col min-h-svh w-full p-4 md:p-10">
 <div class="w-full flex justify-end">
-    <select class="text-[11.5px] px-2.5 py-1 rounded-md bg-paper-deep text-ink-soft border border-transparent focus:border-accent"
-        onchange="location.href=this.value">
-            <option value="/i18n/zh-CN" {% if "zh-CN"|is_current_lang %}selected{% endif %}>
-                中文
-            </option>
-
-            <option value="/i18n/en-US" {% if "en-US"|is_current_lang %}selected{% endif %}>
-                English
-            </option>
-    </select>
+    {{ lang_select::render(crate::utils::now_timestamp()) }}
 </div>
 <div
     class="grow flex flex-col  w-full items-center justify-center p-4 md:p-10"

@@ -47,3 +47,7 @@ pub fn format_date_time(date_time: &DateTime<Utc>) -> String {
         .format(FORMAT)
         .to_string()
 }
+
+pub fn now_timestamp() -> i64 {
+    Utc::now().timestamp()
+}

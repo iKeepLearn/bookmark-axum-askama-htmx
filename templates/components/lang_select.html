@@ -1,0 +1,14 @@
+{% macro render(now) %}
+<div class="">
+    <select class="text-[11.5px] px-2.5 py-1 rounded-md bg-paper-deep text-ink-soft border border-transparent focus:border-accent"
+        onchange="location.href=this.value">
+            <option value="/i18n/zh-CN?t={{now}}" {% if "zh-CN"|is_current_lang %}selected{% endif %}>
+                中文
+            </option>
+
+            <option value="/i18n/en-US?t={{now}}" {% if "en-US"|is_current_lang %}selected{% endif %}>
+                English
+            </option>
+    </select>
+</div>
+{% endmacro %}
