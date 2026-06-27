@@ -41,7 +41,7 @@ impl<T: Template, S: Into<String>> IntoResponse for PageResult<T, S> {
 pub fn public_routes() -> axum::Router<AppState> {
     Router::new()
         .route("/login", get(login_form).post(login_submit))
-        .route("/i18n/{lang}", get(set_lang))
+        .route("/i18n/switch", post(set_lang))
 }
 
 pub fn protected_routes() -> axum::Router<AppState> {
