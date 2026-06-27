@@ -1,4 +1,4 @@
-{% extends "layouts/base.html" %} {% import "components/lang_select.html" as lang_select %} {% block title %}{{ "page-title-login"|t }}{% endblock %} {% block
+{% extends "layouts/base.html" %} {% import "components/lang_select.html" as lang_select %} {% block title %}{{ "token_heading"|t }}{% endblock %} {% block
 content %}
 <main class="flex flex-col min-h-svh w-full p-4 md:p-10">
 <div class="w-full flex justify-end">
@@ -10,7 +10,7 @@ content %}
     <div class="w-full max-w-sm">
         <div class="text-center mb-8">
             <div class="font-display font-bold text-2xl text-ink mb-1">
-                {{ "login-heading"|t }}
+                {{ "token_heading"|t }}
             </div>
             <div
                 class="font-mono text-[11px] uppercase tracking-widest text-ink-faint"
@@ -19,13 +19,7 @@ content %}
             </div>
         </div>
 
-        {% if !flash_message.is_empty() %}
-        <div
-            class="mb-5 rounded-lg bg-accent-soft border border-accent/20 px-4 py-3"
-        >
-            <p class="text-accent-ink text-sm">{{ flash_message }}</p>
-        </div>
-        {% endif %} {% if let Some(err) = errors.general %}
+         {% if let Some(err) = errors.general %}
         <div
             class="mb-5 rounded-lg bg-danger-soft border border-danger/20 px-4 py-3"
         >
@@ -34,7 +28,7 @@ content %}
         {% endif %}
 
         <div class="bg-white border border-line rounded-xl shadow-sm p-6">
-            <form action="/login" method="post">
+            <form action="/token" method="post">
                 <div class="flex flex-col gap-5">
                     <div class="w-full">
                         <label
@@ -73,12 +67,57 @@ content %}
                         type="submit"
                         class="mt-1 px-4 py-2.5 inline-flex items-center justify-center bg-accent text-white font-medium text-sm rounded-lg shadow-sm hover:bg-accent-ink transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2"
                     >
-                        {{ "login-submit"|t }}
+                        {{ "token_submit"|t }}
                     </button>
                 </div>
             </form>
         </div>
+        {% if !flash_message.is_empty() %}
+        <div
+            class="mt-4 w-full flex items-center justify-around rounded-lg bg-accent-soft border border-accent/20 px-4 py-3"
+        >
+            <p id="flash-message" class="grow text-accent-ink text-sm truncate">{{ flash_message }}</p>
+            <button
+                id="copy-btn"
+                class="shrink-0 px-5 py-2 rounded-lg cursor-pointer bg-accent-soft text-accent border border-accent text-sm font-medium hover:bg-accent-ink hover:text-white transition-colors whitespace-nowrap"
+            >
+                {{ "copy_text"|t }}
+            </button>
+        </div>
+        {% endif %}
     </div>
 </div>
 </main>
+{% endblock %}
+ {% block script %}
+<script>
+  const btn = document.getElementById('copy-btn');
+  const msg = document.getElementById('flash-message');
+
+  btn.addEventListener('click', async () => {
+    const text = msg.innerText; // 或 textContent
+
+    try {
+      await navigator.clipboard.writeText(text);
+      btn.innerText = '已复制';
+
+      setTimeout(() => {
+        btn.innerText = '复制';
+      }, 1500);
+    } catch (err) {
+      // 兼容旧浏览器 fallback
+      const textarea = document.createElement('textarea');
+      textarea.value = text;
+      document.body.appendChild(textarea);
+      textarea.select();
+      document.execCommand('copy');
+      document.body.removeChild(textarea);
+
+      btn.innerText = '已复制';
+      setTimeout(() => {
+        btn.innerText = '复制';
+      }, 1500);
+    }
+  });
+</script>
 {% endblock %}

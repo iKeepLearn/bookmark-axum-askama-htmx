@@ -1,15 +1,27 @@
 use crate::domain::user::error::AuthError;
-use crate::domain::user::models::EncryptedPassword;
+use crate::domain::user::models::{EncryptedPassword, UserToken};
 use crate::domain::user::traits::AuthProvider;
 use anyhow::Context;
 use argon2::password_hash::SaltString;
 use argon2::password_hash::rand_core::OsRng;
 use argon2::{Algorithm, Argon2, Params, PasswordHash, PasswordHasher, PasswordVerifier, Version};
+use chrono::{TimeDelta, Utc};
+use jsonwebtoken::{DecodingKey, EncodingKey, Header, Validation};
 use secrecy::{ExposeSecret, SecretString};
+use serde::{Deserialize, Serialize};
 use tokio::task::spawn_blocking;
 
 #[derive(Default, Debug, Clone)]
-pub struct LocalAuthProvider {}
+pub struct LocalAuthProvider {
+    pub secret_key: String,
+    pub expire_time: TimeDelta,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct TokenPlayload {
+    pub sub: String,
+    pub exp: u64,
+}
 
 impl AuthProvider for LocalAuthProvider {
     async fn verify_password(
@@ -54,5 +66,40 @@ impl AuthProvider for LocalAuthProvider {
             AuthError::UnexpectedError(anyhow::anyhow!("Failed to encrypt password."))
         })??;
         Ok(encrypted_password)
+    }
+
+    fn issue_token_with_username(&self, username: &str) -> Result<UserToken, AuthError> {
+        let token_playload = TokenPlayload {
+            sub: username.to_string(),
+            exp: (Utc::now() + self.expire_time).timestamp() as u64,
+        };
+
+        let token = jsonwebtoken::encode(
+            &Header::default(),
+            &token_playload,
+            &EncodingKey::from_secret(self.secret_key.as_bytes()),
+        )
+        .map_err(|e| AuthError::UnexpectedError(e.into()))?;
+
+        let expire_time = self.expire_time.num_milliseconds() as u64;
+        Ok(UserToken {
+            username: username.to_string(),
+            token,
+            expire_time,
+        })
+    }
+
+    fn verify_token(&self, token: &str) -> Result<UserToken, AuthError> {
+        let decode_token = jsonwebtoken::decode::<TokenPlayload>(
+            token,
+            &DecodingKey::from_secret(self.secret_key.as_bytes()),
+            &Validation::default(),
+        )
+        .map_err(|e| AuthError::UnexpectedError(e.into()))?;
+        Ok(UserToken {
+            username: decode_token.claims.sub,
+            token: token.to_string(),
+            expire_time: decode_token.claims.exp as u64,
+        })
     }
 }

@@ -2,6 +2,7 @@ use axum::Json;
 use axum::http::StatusCode;
 use axum::response::{IntoResponse, Response};
 use chrono::Utc;
+use std::collections::HashMap;
 use thiserror::Error;
 
 #[derive(Error, Debug, Clone)]
@@ -18,6 +19,10 @@ pub enum Error {
     BadRequest(String),
     #[error("{0}")]
     InvalidPermission(String),
+    #[error("{0}")]
+    Validation(String),
+    #[error("Need more fields")]
+    ValidationFields(HashMap<String, Vec<String>>),
 }
 
 impl Error {
@@ -54,12 +59,14 @@ impl From<sqlx::Error> for Error {
 impl IntoResponse for Error {
     fn into_response(self) -> Response {
         let (status, message) = match &self {
-            Error::Internal(message) => (StatusCode::NOT_FOUND, message.to_string()),
-            Error::InvalidArgument(message) => (StatusCode::NOT_FOUND, message.to_string()),
+            Error::Internal(message) => (StatusCode::INTERNAL_SERVER_ERROR, message.to_string()),
+            Error::InvalidArgument(message) => (StatusCode::BAD_REQUEST, message.to_string()),
             Error::NotFound(message) => (StatusCode::NOT_FOUND, message.to_string()),
-            Error::InvalidAuth => (StatusCode::NOT_FOUND, self.to_string()),
-            Error::BadRequest(message) => (StatusCode::NOT_FOUND, message.to_string()),
-            Error::InvalidPermission(message) => (StatusCode::NOT_FOUND, message.to_string()),
+            Error::InvalidAuth => (StatusCode::UNAUTHORIZED, self.to_string()),
+            Error::BadRequest(message) => (StatusCode::BAD_REQUEST, message.to_string()),
+            Error::InvalidPermission(message) => (StatusCode::FORBIDDEN, message.to_string()),
+            Error::Validation(message) => (StatusCode::BAD_REQUEST, message.to_string()),
+            Error::ValidationFields(_) => (StatusCode::BAD_REQUEST, "Need more fields".to_string()),
         };
 
         let body = serde_json::json!({
@@ -70,6 +77,8 @@ impl IntoResponse for Error {
         (status, Json(body)).into_response()
     }
 }
+
+pub type ApiResult<T> = Result<T, Error>;
 
 impl From<std::io::Error> for Error {
     fn from(value: std::io::Error) -> Self {

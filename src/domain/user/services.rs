@@ -1,5 +1,5 @@
 use super::error::{AuthError, UserError};
-use super::models::{Credentials, UserInfo};
+use super::models::{Credentials, UserInfo, UserToken};
 use super::traits::{AuthProvider, UserRepository};
 use secrecy::SecretString;
 
@@ -61,5 +61,23 @@ impl<R: UserRepository> UserService<R> {
             .change_password(&user.username, &encrypted_password)
             .await
             .map_err(|e| UserError::Unkown(e.into()))
+    }
+
+    pub async fn get_api_token<T: AuthProvider>(
+        &self,
+        credentials: &Credentials,
+        token_provider: &T,
+    ) -> Result<UserToken, AuthError> {
+        let user = self
+            .authenticate(credentials, token_provider)
+            .await
+            .map_err(|_| AuthError::InvalidCredentials(anyhow::anyhow!("Invalid credentials")))?;
+        if user.is_admin() {
+            Ok(token_provider.issue_token_with_username(&user.username)?)
+        } else {
+            Err(AuthError::InvalidPermission(anyhow::anyhow!(
+                "Invalid permission"
+            )))
+        }
     }
 }

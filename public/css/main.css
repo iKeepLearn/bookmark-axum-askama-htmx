@@ -400,6 +400,12 @@
   .max-h-64 {
     max-height: calc(var(--spacing) * 64);
   }
+  .min-h-4\.5 {
+    min-height: calc(var(--spacing) * 4.5);
+  }
+  .min-h-\[18px\] {
+    min-height: 18px;
+  }
   .min-h-screen {
     min-height: 100vh;
   }
@@ -426,6 +432,9 @@
   }
   .w-60 {
     width: calc(var(--spacing) * 60);
+  }
+  .w-90 {
+    width: calc(var(--spacing) * 90);
   }
   .w-full {
     width: 100%;
@@ -479,6 +488,9 @@
   .resize {
     resize: both;
   }
+  .resize-none {
+    resize: none;
+  }
   .grid-cols-1 {
     grid-template-columns: repeat(1, minmax(0, 1fr));
   }
@@ -496,6 +508,12 @@
   }
   .items-end {
     align-items: flex-end;
+  }
+  .items-start {
+    align-items: flex-start;
+  }
+  .justify-around {
+    justify-content: space-around;
   }
   .justify-between {
     justify-content: space-between;
@@ -721,6 +739,9 @@
   .py-3\.5 {
     padding-block: calc(var(--spacing) * 3.5);
   }
+  .py-6 {
+    padding-block: calc(var(--spacing) * 6);
+  }
   .py-8 {
     padding-block: calc(var(--spacing) * 8);
   }
@@ -859,6 +880,9 @@
   }
   .whitespace-nowrap {
     white-space: nowrap;
+  }
+  .text-accent {
+    color: var(--color-accent);
   }
   .text-accent-ink {
     color: var(--color-accent-ink);
@@ -1248,6 +1272,13 @@
     &:hover {
       @media (hover: hover) {
         color: var(--color-ink);
+      }
+    }
+  }
+  .hover\:text-ink-soft {
+    &:hover {
+      @media (hover: hover) {
+        color: var(--color-ink-soft);
       }
     }
   }

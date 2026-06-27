@@ -1,7 +1,7 @@
 use secrecy::SecretString;
 
 use super::error::{AuthError, UserError};
-use super::models::{EncryptedPassword, UserInfo};
+use super::models::{EncryptedPassword, UserInfo, UserToken};
 
 pub trait UserRepository: Send + Sync + 'static {
     fn get_user_by_username(
@@ -31,4 +31,6 @@ pub trait AuthProvider: Send + Sync + 'static {
         &self,
         password: SecretString,
     ) -> impl Future<Output = Result<EncryptedPassword, AuthError>> + Send;
+    fn issue_token_with_username(&self, username: &str) -> Result<UserToken, AuthError>;
+    fn verify_token(&self, token: &str) -> Result<UserToken, AuthError>;
 }

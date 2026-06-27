@@ -22,6 +22,13 @@ pub struct UserInfo {
     pub role: String,
 }
 
+#[derive(Debug, Clone)]
+pub struct UserToken {
+    pub username: String,
+    pub token: String,
+    pub expire_time: u64,
+}
+
 impl UserInfo {
     pub fn is_admin(&self) -> bool {
         self.role == "admin"

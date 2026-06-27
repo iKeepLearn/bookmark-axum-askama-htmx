@@ -9,6 +9,7 @@ pub mod middleware;
 
 use self::bookmark::bookmark_import;
 use self::i18n::set_lang;
+use self::user::{get_token_submit, token_form};
 use crate::app::state::AppState;
 use crate::utils::render_template;
 use askama::Template;
@@ -40,6 +41,7 @@ impl<T: Template, S: Into<String>> IntoResponse for PageResult<T, S> {
 
 pub fn public_routes() -> axum::Router<AppState> {
     Router::new()
+        .route("/token", get(token_form).post(get_token_submit))
         .route("/login", get(login_form).post(login_submit))
         .route("/i18n/switch", post(set_lang))
 }

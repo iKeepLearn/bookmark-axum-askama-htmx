@@ -79,6 +79,7 @@ usermenu-change-password = 修改密码
 usermenu-logout = 退出
 
 # User Api
+invalid_permission = 无效权限
 invalid_credentials = 用户名或密码错误
 username_required = 用户名不能为空
 password_required = 密码不能为空
@@ -97,3 +98,8 @@ category_required = 请选择分类
 add_success = 添加成功
 add_failed = 添加失败，请稍后重试
 update_failed = 修改失败，请稍后重试
+
+token_heading = 令牌生成
+token_submit = 生成令牌
+token_success = 令牌生成成功
+copy_text = 复制

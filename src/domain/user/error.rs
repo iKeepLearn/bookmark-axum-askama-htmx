@@ -2,6 +2,8 @@ use thiserror::Error;
 
 #[derive(Error, Debug)]
 pub enum AuthError {
+    #[error("Invalid permission.")]
+    InvalidPermission(#[source] anyhow::Error),
     #[error("Invalid credentials.")]
     InvalidCredentials(#[source] anyhow::Error),
     #[error(transparent)]

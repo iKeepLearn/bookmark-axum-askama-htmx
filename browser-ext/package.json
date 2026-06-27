@@ -1,0 +1,22 @@
+{
+  "name": "bookmark-clipper",
+  "description": "一键收藏当前网页到自建书签库",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "wxt",
+    "dev:firefox": "wxt -b firefox",
+    "build": "wxt build",
+    "build:firefox": "wxt build -b firefox",
+    "zip": "wxt zip",
+    "zip:firefox": "wxt zip -b firefox",
+    "compile": "tsc --noEmit",
+    "postinstall": "wxt prepare"
+  },
+  "devDependencies": {
+    "tailwindcss": "^4.3.1",
+    "typescript": "^5.9.3",
+    "wxt": "^0.20.27"
+  }
+}

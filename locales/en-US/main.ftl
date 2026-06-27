@@ -79,6 +79,7 @@ usermenu-change-password = Change Password
 usermenu-logout = Log Out
 
 # User Api
+invalid_permission = Invalid permission
 invalid_credentials = Invalid credentials
 username_required = Username is required
 password_required = Password is required
@@ -96,3 +97,8 @@ category_required = Please select a category
 add_success = Added successfully
 add_failed = Failed to add, please try again later
 update_failed = Failed to update, please try again later
+
+token_heading = Token Generation
+token_submit = Generate Token
+token_success = Token generated successfully
+copy_text = Copy

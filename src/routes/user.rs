@@ -1,6 +1,6 @@
 use super::PageResult;
 use super::extractor::i18n::Locale;
-use crate::domain::user::models::{Credentials, UserInfo};
+use crate::domain::user::models::{Credentials, UserInfo, UserToken};
 use crate::domain::user::services::UserService;
 use crate::infra::auth_provider::local::LocalAuthProvider;
 use crate::infra::database::user::PgUserRepository;
@@ -19,7 +19,7 @@ const FLASH_KEY: &str = "flash_messages";
 #[derive(Template)]
 #[template(path = "pages/login.html")]
 pub struct LoginTemplate {
-    flash_messages: Vec<String>,
+    flash_message: String,
     errors: LoginErrors,
     username: String,
 }
@@ -67,8 +67,23 @@ impl From<UserInfo> for SessionUser {
     }
 }
 
+#[derive(Deserialize, Serialize, Debug, Clone)]
+pub struct ApiUser {
+    pub username: String,
+    pub token: String,
+}
+
+impl From<UserToken> for ApiUser {
+    fn from(value: UserToken) -> Self {
+        ApiUser {
+            username: value.username,
+            token: value.token,
+        }
+    }
+}
+
 pub async fn login_form(session: Session) -> PageResult<LoginTemplate, &'static str> {
-    let flash_messages: Vec<String> = session
+    let flash_message: String = session
         .remove(FLASH_KEY) // remove = 取出并删除，flash消息只显示一次
         .await
         .ok()
@@ -76,7 +91,7 @@ pub async fn login_form(session: Session) -> PageResult<LoginTemplate, &'static 
         .unwrap_or_default();
 
     PageResult::RenderTemplate(LoginTemplate {
-        flash_messages,
+        flash_message,
         errors: LoginErrors::default(),
         username: String::new(),
     })
@@ -118,7 +133,7 @@ pub async fn login_submit(
     }
 
     PageResult::RenderTemplate(LoginTemplate {
-        flash_messages: vec![],
+        flash_message: String::new(),
         errors,
         username: form.username,
     })
@@ -182,4 +197,69 @@ pub async fn changepwd_submit(
             msg: t_for(&locale.lang, "current_password_wrong"),
         }),
     }
+}
+
+#[derive(Template)]
+#[template(path = "pages/api_token.html")]
+pub struct TokenTemplate {
+    flash_message: String,
+    errors: LoginErrors,
+    username: String,
+}
+
+pub async fn token_form(session: Session) -> PageResult<TokenTemplate, &'static str> {
+    let flash_message: String = session
+        .remove(FLASH_KEY) // remove = 取出并删除，flash消息只显示一次
+        .await
+        .ok()
+        .flatten()
+        .unwrap_or_default();
+
+    PageResult::RenderTemplate(TokenTemplate {
+        flash_message,
+        errors: LoginErrors::default(),
+        username: String::new(),
+    })
+}
+
+pub async fn get_token_submit(
+    locale: Locale,
+    State(service): State<UserService<PgUserRepository>>,
+    State(auth_provider): State<LocalAuthProvider>,
+    Form(form): Form<LoginForm>,
+) -> PageResult<TokenTemplate, &'static str> {
+    let mut errors = LoginErrors::default();
+
+    if form.username.trim().is_empty() {
+        errors.username = Some(t_for(&locale.lang, "username_required"));
+    }
+    if form.password.expose_secret().is_empty() {
+        errors.password = Some(t_for(&locale.lang, "password_required"));
+    }
+
+    if errors.username.is_none() && errors.password.is_none() {
+        let credentials = Credentials {
+            username: form.username.clone(),
+            password: form.password,
+        };
+        match service.get_api_token(&credentials, &auth_provider).await {
+            Ok(user) => {
+                return PageResult::RenderTemplate(TokenTemplate {
+                    flash_message: user.token,
+                    errors,
+                    username: form.username,
+                });
+            }
+            Err(err) => {
+                error!("Failed to authenticate: {}", err);
+                errors.general = Some(t_for(&locale.lang, "invalid_permission"));
+            }
+        }
+    }
+
+    PageResult::RenderTemplate(TokenTemplate {
+        flash_message: String::new(),
+        errors,
+        username: form.username,
+    })
 }
