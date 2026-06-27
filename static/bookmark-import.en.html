@@ -1,9 +1,9 @@
 <!doctype html>
-<html lang="zh-CN">
+<html lang="en">
     <head>
         <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-        <title>书签导入</title>
+        <title>Bookmark Import</title>
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
         <link rel="stylesheet" href="/static/css/main.css" />
@@ -83,14 +83,16 @@
     </head>
     <body class="bg-paper text-ink font-body min-h-screen">
         <div class="max-w-5xl mx-auto px-6 py-12">
-            <!-- 页头:目录卡片的标题区 -->
+            <!-- Page Header -->
             <header class="mb-10 border-b border-line pb-6">
                 <h1 class="font-display text-4xl font-semibold text-ink">
-                    书签导入
+                    Bookmark Import
                 </h1>
                 <p class="mt-2 text-ink-soft">
-                    导入 Chrome
-                    导出的书签文件,在浏览器本地完成分类与整理,确认无误后再提交给后端归档——整个解析过程不经过任何服务器。
+                    Import bookmarks exported from Chrome. Organize and
+                    categorize them locally in the browser, then submit them to
+                    the backend for archiving after confirmation — the entire
+                    parsing process runs locally without any server involvement.
                 </p>
             </header>
 
@@ -102,45 +104,49 @@
                         class="inline-flex items-center justify-center w-6 h-6 rounded-full bg-accent-soft text-accent-ink text-xs font-mono"
                         >i</span
                     >
-                    如何导出 Chrome 书签
+                    How to export Chrome bookmarks
                 </h2>
                 <ol class="grid sm:grid-cols-2 md:grid-cols-4 gap-4">
                     <li class="bg-paper-deep border border-line rounded-lg p-4">
                         <span class="font-mono text-xs text-warm">01</span>
                         <p class="mt-1 text-sm">
-                            地址栏直接输入
+                            Enter
                             <code
                                 class="font-mono text-xs bg-paper-deeper px-1 py-0.5 rounded"
                                 >chrome://bookmarks</code
                             >
-                            访问书签管理器。
+                            in the address bar to open the bookmark manager.
                         </p>
                     </li>
                     <li class="bg-paper-deep border border-line rounded-lg p-4">
                         <span class="font-mono text-xs text-warm">02</span>
                         <p class="mt-1 text-sm">
-                            点击右上角「⋮」菜单,选择「导出书签」,保存为一个
+                            Click the “⋮” menu in the top-right corner and
+                            choose “Export bookmarks”, then save it as a
                             <code
                                 class="font-mono text-xs bg-paper-deeper px-1 py-0.5 rounded"
                                 >bookmarks.html</code
                             >
-                            文件。
+                            file.
                         </p>
                     </li>
                     <li class="bg-paper-deep border border-line rounded-lg p-4">
                         <span class="font-mono text-xs text-warm">03</span>
                         <p class="mt-1 text-sm">
-                            把这个
+                            Drag the
                             <code
                                 class="font-mono text-xs bg-paper-deeper px-1 py-0.5 rounded"
                                 >bookmarks.html</code
                             >
-                            文件拖到下方区域,或点击选择文件——解析全部在本地完成。
+                            file into the area below, or click to select it —
+                            parsing is done entirely locally.
                         </p>
                     </li>
                     <li class="bg-paper-deep border border-line rounded-lg p-4">
                         <span class="font-mono text-xs text-warm">04</span>
-                        <p class="mt-1 text-sm">点击每个分类为其设置封面</p>
+                        <p class="mt-1 text-sm">
+                            Click each category to set its cover image
+                        </p>
                     </li>
                 </ol>
             </section>
@@ -158,10 +164,10 @@
                         class="hidden"
                     />
                     <p class="font-display text-lg text-ink">
-                        拖拽书签文件到此处
+                        Drag bookmark file here
                     </p>
                     <p class="text-sm text-ink-soft mt-1">
-                        或点击选择
+                        or click to select
                         <span class="font-mono text-xs">bookmarks.html</span>
                     </p>
                 </label>
@@ -176,19 +182,19 @@
                     class="mb-5 flex items-center justify-between flex-wrap gap-3"
                 >
                     <p class="text-sm text-ink-soft">
-                        共解析出
+                        Parsed
                         <span
                             id="count-categories"
                             class="font-mono text-ink font-medium"
                             >0</span
                         >
-                        个分类,
+                        categories,
                         <span
                             id="count-bookmarks"
                             class="font-mono text-ink font-medium"
                             >0</span
                         >
-                        条书签。
+                        bookmarks.
                     </p>
                 </div>
 
@@ -199,17 +205,17 @@
                 >
                     <div class="flex items-center gap-2 mb-2">
                         <div class="font-medium font-mono text-ink-soft">
-                            当前分类封面
+                            Current category cover
                         </div>
                         <div class="text-accent-ink text-sm">
-                            URL必须为https开始的图片地址
+                            URL must start with https image URL
                         </div>
                     </div>
 
                     <input
                         id="category-cover-input"
                         class="bg-white px-2 py-2 rounded-md w-full text-sm border border-line focus:outline-none focus:border focus:border-accent"
-                        placeholder="请输入封面图片 URL"
+                        placeholder="Enter cover image URL"
                     />
                 </div>
 
@@ -231,10 +237,12 @@
                                 <tr
                                     class="text-left text-xs uppercase tracking-wider text-ink-soft font-mono"
                                 >
-                                    <th class="px-4 py-3">标题</th>
+                                    <th class="px-4 py-3">Title</th>
                                     <th class="px-4 py-3">URL</th>
-                                    <th class="px-4 py-3">分类</th>
-                                    <th class="px-4 py-3 text-right">操作</th>
+                                    <th class="px-4 py-3">Category</th>
+                                    <th class="px-4 py-3 text-right">
+                                        Actions
+                                    </th>
                                 </tr>
                             </thead>
                             <tbody id="bookmark-tbody"></tbody>
@@ -250,7 +258,7 @@
                             id="submit-btn"
                             class="px-5 py-2 rounded-lg cursor-pointer bg-accent text-white text-sm font-medium hover:bg-accent-ink transition-colors whitespace-nowrap"
                         >
-                            提交
+                            Submit
                         </button>
                     </div>
                     <p id="submit-status" class="text-sm mb-3 hidden"></p>
@@ -258,13 +266,13 @@
                         <summary
                             class="text-sm text-ink-soft cursor-pointer select-none flex items-center gap-2"
                         >
-                            <span>▶︎查看 JSON 预览</span>
+                            <span>▶ View JSON preview</span>
                             <button
                                 id="copy-btn"
                                 type="button"
                                 class="text-xs cursor-pointer text-accent-ink underline hover:text-accent"
                             >
-                                复制
+                                Copy
                             </button>
                         </summary>
                         <pre
@@ -325,22 +333,23 @@
                 });
 
                 function handleFile(file) {
-                    fileStatus.textContent = `正在解析 ${file.name} …`;
+                    fileStatus.textContent = `Parsing ${file.name} …`;
                     fileStatus.classList.remove("hidden");
                     const reader = new FileReader();
                     reader.onload = () => {
                         try {
                             const parsed = parseBookmarksHtml(reader.result);
                             bookmarks = parsed;
-                            fileStatus.textContent = `已解析 ${file.name} · 共 ${bookmarks.length} 条书签`;
+                            fileStatus.textContent = `Parsed ${file.name} · ${bookmarks.length} bookmarks`;
                             renderAll();
                         } catch (err) {
                             console.error(err);
-                            fileStatus.textContent = `解析失败:${err.message}。请确认这是 Chrome 导出的书签 HTML 文件。`;
+                            fileStatus.textContent = `Parse failed: ${err.message}. Please ensure this is a Chrome exported bookmarks HTML file.`;
                         }
                     };
                     reader.onerror = () => {
-                        fileStatus.textContent = "读取文件失败,请重试。";
+                        fileStatus.textContent =
+                            "File read failed. Please try again.";
                     };
                     reader.readAsText(file, "utf-8");
                 }
@@ -353,7 +362,7 @@
                     const allDls = Array.from(doc.querySelectorAll("dl"));
                     if (allDls.length === 0)
                         throw new Error(
-                            "未找到书签结构(<DL>),不是有效的书签文件",
+                            "No bookmark structure (<DL>) found, invalid file",
                         );
 
                     function findH3In(dt) {
@@ -393,7 +402,7 @@
                     const seen = new Set();
 
                     allDls.forEach((dl) => {
-                        const category = categoryForDl(dl) || "未分类";
+                        const category = categoryForDl(dl) || "Uncategorized";
                         Array.from(dl.children).forEach((child) => {
                             if (child.tagName !== "DT") return;
                             const a =
@@ -418,7 +427,9 @@
                     });
 
                     if (out.length === 0)
-                        throw new Error("解析出 0 条书签,文件内容可能为空");
+                        throw new Error(
+                            "Parsed 0 bookmarks, file may be empty",
+                        );
                     return out;
                 }
 
@@ -452,7 +463,7 @@
                                 : "bg-white cursor-pointer text-ink-soft border-line hover:border-accent hover:text-accent-ink",
                         ].join(" ");
                         btn.textContent = isAll
-                            ? `全部 (${count})`
+                            ? `All (${count})`
                             : `${label} (${count})`;
                         btn.addEventListener("click", () => {
                             activeCategory = isAll ? null : label;
@@ -548,11 +559,11 @@
                         });
                         const newOpt = document.createElement("option");
                         newOpt.value = "__new__";
-                        newOpt.textContent = "+ 新分类…";
+                        newOpt.textContent = "+ New category…";
                         select.appendChild(newOpt);
                         select.addEventListener("change", (e) => {
                             if (e.target.value === "__new__") {
-                                const name = prompt("新分类名称:");
+                                const name = prompt("New category name:");
                                 if (name && name.trim()) {
                                     bm.category = name.trim();
                                     rebuildCategoryList();
@@ -572,7 +583,7 @@
                         const tdDel = document.createElement("td");
                         tdDel.className = "px-4 py-2 align-top text-right";
                         const delBtn = document.createElement("button");
-                        delBtn.textContent = "删除";
+                        delBtn.textContent = "Delete";
                         delBtn.className =
                             "text-xs font-mono text-danger hover:text-danger px-2 py-1 rounded hover:bg-danger-soft transition-colors";
                         delBtn.addEventListener("click", () => {
@@ -620,9 +631,12 @@
                         await navigator.clipboard.writeText(
                             JSON.stringify(buildPayload(), null, 2),
                         );
-                        flashStatus("已复制 JSON 到剪贴板", false);
+                        flashStatus("Copied JSON to clipboard", false);
                     } catch {
-                        flashStatus("复制失败,请手动从预览框中选取", true);
+                        flashStatus(
+                            "Copy failed. Please select from preview manually",
+                            true,
+                        );
                     }
                 });
 
@@ -631,7 +645,7 @@
                         let cover = categoryCoverMap[cat]?.trim();
                         if (!cover || !cover.startsWith("https")) {
                             flashStatus(
-                                `分类「${cat}」未设置封面或封面url不正确`,
+                                `Category "${cat}" has no valid cover image URL`,
                                 true,
                             );
                             activeCategory = cat;
@@ -644,7 +658,7 @@
                     }
                     const payload = buildPayload();
                     submitBtn.disabled = true;
-                    submitBtn.textContent = "提交中…";
+                    submitBtn.textContent = "Submitting…";
                     try {
                         const res = await fetch(backendUrl, {
                             method: "POST",
@@ -655,13 +669,13 @@
                         if (!res.ok) throw new Error(`HTTP ${res.status}`);
                         const body = await res.json();
                         if (!body.success) throw new Error(body.message);
-                        flashStatus("提交成功", false);
+                        flashStatus("Submitted successfully", false);
                         location.href = "/";
                     } catch (err) {
-                        flashStatus(`提交失败:${err.message}`, true);
+                        flashStatus(`Submission failed: ${err.message}`, true);
                     } finally {
                         submitBtn.disabled = false;
-                        submitBtn.textContent = "提交";
+                        submitBtn.textContent = "Submit";
                     }
                 });
 

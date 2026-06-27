@@ -19,231 +19,236 @@
         margin: 0 auto;
     }
 </style>
-{% endblock head %} {% block content %} {% if let Some(err) = errors.general %}
-<div
-    class="mb-5 rounded-lg bg-danger-soft border border-danger/20 px-4 py-3 w-full max-w-sm"
+{% endblock head %} {% block content %}
+<main
+    class="max-w-3xl mx-auto w-full p-4 min-h-screen flex items-center justify-center"
 >
-    <p class="text-danger text-sm text-center">{{ err }}</p>
-</div>
-{% endif %} {% if let Some(msg) = success_msg %}
-<div
-    class="mb-5 rounded-lg bg-accent-soft border border-accent/20 px-4 py-3 w-full max-w-sm"
->
-    <p class="text-accent-ink text-sm text-center">{{ msg }}</p>
-</div>
-{% endif %}
-
-<div class="bg-white sm:w-lg border border-line rounded-xl shadow-sm p-6">
-    <div class="font-display font-semibold text-lg text-ink mb-5">
-        {{"bookmark-edit-heading"|t}}
+    {% if let Some(err) = errors.general %}
+    <div
+        class="mb-5 rounded-lg bg-danger-soft border border-danger/20 px-4 py-3 w-full max-w-sm"
+    >
+        <p class="text-danger text-sm text-center">{{ err }}</p>
     </div>
+    {% endif %} {% if let Some(msg) = success_msg %}
+    <div
+        class="mb-5 rounded-lg bg-accent-soft border border-accent/20 px-4 py-3 w-full max-w-sm"
+    >
+        <p class="text-accent-ink text-sm text-center">{{ msg }}</p>
+    </div>
+    {% endif %}
 
-    <form id="nav-form" action="/manage/bookmark/edit" method="post">
-        <div class="flex flex-col gap-5">
-            <input type="hidden" name="id" value="{{ id }}" />
-            <div class="w-full">
-                <input
-                    type="text"
-                    placeholder='{{"bookmark-title-placeholder"|t}}'
-                    name="title"
-                    value="{{ title }}"
-                    class="px-3.5 py-2.5 border rounded-lg w-full text-sm text-ink placeholder:text-ink-faint focus:outline-none focus:ring-2 focus:ring-accent focus:border-accent transition-colors {% if errors.title.is_some() %}border-danger{% else %}border-line{% endif %}"
-                    required
-                />
-                {% if let Some(err) = errors.title %}
-                <p class="text-danger text-xs mt-1.5">{{ err }}</p>
-                {% endif %}
-            </div>
-            <div class="w-full">
-                <input
-                    type="text"
-                    placeholder='{{"bookmark-url-placeholder"|t}}'
-                    name="url"
-                    value="{{ url }}"
-                    class="px-3.5 py-2.5 border rounded-lg w-full text-sm text-ink placeholder:text-ink-faint focus:outline-none focus:ring-2 focus:ring-accent focus:border-accent transition-colors {% if errors.url.is_some() %}border-danger{% else %}border-line{% endif %}"
-                    required
-                />
-                {% if let Some(err) = errors.url %}
-                <p class="text-danger text-xs mt-1.5">{{ err }}</p>
-                {% endif %}
-            </div>
+    <div class="bg-white sm:w-lg border border-line rounded-xl shadow-sm p-6">
+        <div class="font-display font-semibold text-lg text-ink mb-5">
+            {{"bookmark-edit-heading"|t}}
+        </div>
 
-            <div class="w-full">
-                <div class="flex gap-2">
+        <form id="nav-form" action="/manage/bookmark/edit" method="post">
+            <div class="flex flex-col gap-5">
+                <input type="hidden" name="id" value="{{ id }}" />
+                <div class="w-full">
                     <input
                         type="text"
-                        id="cover_image"
-                        name="cover_image"
-                        placeholder='{{"bookmark-cover-image-placeholder"|t}}'
-                        value="{{ cover_image }}"
-                        class="flex-1 px-3.5 py-2.5 border rounded-lg text-sm text-ink placeholder:text-ink-faint focus:outline-none focus:ring-2 focus:ring-accent focus:border-accent transition-colors {% if errors.cover_image.is_some() %}border-danger{% else %}border-line{% endif %}"
+                        placeholder='{{"bookmark-title-placeholder"|t}}'
+                        name="title"
+                        value="{{ title }}"
+                        class="px-3.5 py-2.5 border rounded-lg w-full text-sm text-ink placeholder:text-ink-faint focus:outline-none focus:ring-2 focus:ring-accent focus:border-accent transition-colors {% if errors.title.is_some() %}border-danger{% else %}border-line{% endif %}"
                         required
                     />
-                    <button
-                        type="button"
-                        id="open-upload-modal"
-                        hx-on:click="openUploadModal()"
-                        class="px-3.5 py-2 bg-paper-deeper hover:bg-paper-deep text-ink-soft hover:text-ink rounded-lg text-sm transition-colors"
-                    >
-                        {{ "bookmark-upload-button"|t}}
-                    </button>
+                    {% if let Some(err) = errors.title %}
+                    <p class="text-danger text-xs mt-1.5">{{ err }}</p>
+                    {% endif %}
                 </div>
-                {% if let Some(err) = errors.cover_image %}
-                <p class="text-danger text-xs mt-1.5">{{ err }}</p>
-                {% endif %}
-            </div>
-
-            <!-- Category -->
-            <div class="w-full">
-                <div class="flex flex-wrap gap-1.5">
-                    {% for cat in categories %}
-                    <label
-                        class="cursor-pointer text-[12.5px] rounded-md px-2.5 py-1 border border-line text-ink-soft bg-paper-deeper has-checked:bg-accent has-checked:text-white has-checked:border-accent transition-colors"
-                    >
-                        <input
-                            type="radio"
-                            name="category_id"
-                            value="{{ cat.id }}"
-                            {%
-                            if
-                            self.is_category_selected(cat.id)
-                            %}checked{%
-                            endif
-                            %}
-                            class="hidden"
-                        />
-                        {{ cat.name }}
-                    </label>
-                    {% endfor %}
+                <div class="w-full">
+                    <input
+                        type="text"
+                        placeholder='{{"bookmark-url-placeholder"|t}}'
+                        name="url"
+                        value="{{ url }}"
+                        class="px-3.5 py-2.5 border rounded-lg w-full text-sm text-ink placeholder:text-ink-faint focus:outline-none focus:ring-2 focus:ring-accent focus:border-accent transition-colors {% if errors.url.is_some() %}border-danger{% else %}border-line{% endif %}"
+                        required
+                    />
+                    {% if let Some(err) = errors.url %}
+                    <p class="text-danger text-xs mt-1.5">{{ err }}</p>
+                    {% endif %}
                 </div>
-                {% if let Some(err) = errors.category_id %}
-                <p class="text-danger text-xs mt-1.5">{{ err }}</p>
-                {% endif %}
-            </div>
-
-            <!-- Tags -->
-            <div class="w-full">
-                <input
-                    type="text"
-                    placeholder='{{"bookmark-new-tags-placeholder"|t}}'
-                    name="new_tags"
-                    value="{{ new_tags }}"
-                    class="px-3.5 py-2.5 border border-line rounded-lg w-full text-sm text-ink placeholder:text-ink-faint focus:outline-none focus:ring-2 focus:ring-accent focus:border-accent transition-colors mb-2"
-                />
-                {% if !tags.is_empty() %}
-                <div class="flex flex-wrap gap-1.5">
-                    {% for tag in tags %}
-                    <label
-                        class="cursor-pointer text-[12.5px] rounded-md px-2.5 py-1 border border-line text-ink-soft bg-paper-deeper has-checked:bg-accent has-checked:text-white has-checked:border-accent transition-colors"
-                    >
-                        <input
-                            type="checkbox"
-                            name="tag_ids"
-                            value="{{ tag.id }}"
-                            {%
-                            if
-                            self.is_tag_selected(tag.id)
-                            %}checked{%
-                            endif
-                            %}
-                            class="hidden"
-                        />
-                        {{ tag.name }}
-                    </label>
-                    {% endfor %}
-                </div>
-                {% endif %}
-            </div>
-
-            <div
-                class="grid text-sm after:px-3.5 after:py-2.5 [&>textarea]:text-inherit after:text-inherit [&>textarea]:resize-none [&>textarea]:overflow-hidden [&>textarea]:[grid-area:1/1/2/2] after:[grid-area:1/1/2/2] after:whitespace-pre-wrap after:invisible after:content-[attr(data-cloned-val)_'_'] after:border after:border-transparent"
-            >
-                <textarea
-                    class="w-full border border-line rounded-lg px-3.5 py-2.5 text-ink placeholder:text-ink-faint focus:outline-none focus:ring-2 focus:ring-accent focus:border-accent transition-colors"
-                    name="desc"
-                    id="desc"
-                    rows="3"
-                    onInput="this.parentNode.dataset.clonedVal = this.value"
-                    placeholder='{{"bookmark-desc-placeholder"|t}}'
-                >
-{{ desc }}</textarea
-                >
-            </div>
-            <button
-                type="submit"
-                class="px-4 py-2.5 inline-flex items-center justify-center bg-accent text-white font-medium text-sm rounded-lg shadow-sm hover:bg-accent-ink transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2"
-            >
-                {{"bookmark-edit-submit"|t}}
-            </button>
-        </div>
-    </form>
-</div>
-
-<!-- Upload Modal -->
-<div id="upload-modal" class="upload-modal">
-    <div class="bg-white rounded-xl shadow-xl p-6 w-full max-w-md">
-        <div class="flex justify-between items-center mb-4">
-            <h3 class="font-display font-semibold text-base text-ink">
-                Upload Cover Image
-            </h3>
-        </div>
-
-        <form
-            id="upload-form"
-            hx-post="/manage/upload"
-            hx-encoding="multipart/form-data"
-            hx-swap="none"
-            hx-on::before-request="onUploadStart()"
-            hx-on::after-request="onUploadComplete(event)"
-            hx-on::send-error="onUploadNetworkError()"
-            class="flex flex-col gap-4"
-        >
-            <div class="flex flex-col items-center gap-4">
-                <!-- Image preview container -->
-                <img
-                    id="image-preview"
-                    class="rounded-lg overflow-hidden image-preview object-cover aspect-video"
-                    alt="Preview"
-                />
 
                 <div class="w-full">
-                    <label class="block text-sm font-medium text-ink mb-1.5"
-                        >Select Image</label
-                    >
-                    <input
-                        type="file"
-                        id="image-upload"
-                        name="image"
-                        accept="image/*"
-                        required
-                        hx-on:change="previewImage(event)"
-                        class="w-full px-3 py-2 border border-line rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-accent"
-                    />
+                    <div class="flex gap-2">
+                        <input
+                            type="text"
+                            id="cover_image"
+                            name="cover_image"
+                            placeholder='{{"bookmark-cover-image-placeholder"|t}}'
+                            value="{{ cover_image }}"
+                            class="flex-1 px-3.5 py-2.5 border rounded-lg text-sm text-ink placeholder:text-ink-faint focus:outline-none focus:ring-2 focus:ring-accent focus:border-accent transition-colors {% if errors.cover_image.is_some() %}border-danger{% else %}border-line{% endif %}"
+                            required
+                        />
+                        <button
+                            type="button"
+                            id="open-upload-modal"
+                            hx-on:click="openUploadModal()"
+                            class="px-3.5 py-2 bg-paper-deeper hover:bg-paper-deep text-ink-soft hover:text-ink rounded-lg text-sm transition-colors"
+                        >
+                            {{ "bookmark-upload-button"|t}}
+                        </button>
+                    </div>
+                    {% if let Some(err) = errors.cover_image %}
+                    <p class="text-danger text-xs mt-1.5">{{ err }}</p>
+                    {% endif %}
                 </div>
-            </div>
 
-            <div id="upload-status" class="text-sm"></div>
+                <!-- Category -->
+                <div class="w-full">
+                    <div class="flex flex-wrap gap-1.5">
+                        {% for cat in categories %}
+                        <label
+                            class="cursor-pointer text-[12.5px] rounded-md px-2.5 py-1 border border-line text-ink-soft bg-paper-deeper has-checked:bg-accent has-checked:text-white has-checked:border-accent transition-colors"
+                        >
+                            <input
+                                type="radio"
+                                name="category_id"
+                                value="{{ cat.id }}"
+                                {%
+                                if
+                                self.is_category_selected(cat.id)
+                                %}checked{%
+                                endif
+                                %}
+                                class="hidden"
+                            />
+                            {{ cat.name }}
+                        </label>
+                        {% endfor %}
+                    </div>
+                    {% if let Some(err) = errors.category_id %}
+                    <p class="text-danger text-xs mt-1.5">{{ err }}</p>
+                    {% endif %}
+                </div>
 
-            <div class="flex justify-end gap-2">
-                <button
-                    type="button"
-                    id="cancel-upload"
-                    hx-on:click="closeUploadModal()"
-                    class="px-4 py-2 text-ink-soft hover:bg-paper-deeper rounded-lg transition-colors"
+                <!-- Tags -->
+                <div class="w-full">
+                    <input
+                        type="text"
+                        placeholder='{{"bookmark-new-tags-placeholder"|t}}'
+                        name="new_tags"
+                        value="{{ new_tags }}"
+                        class="px-3.5 py-2.5 border border-line rounded-lg w-full text-sm text-ink placeholder:text-ink-faint focus:outline-none focus:ring-2 focus:ring-accent focus:border-accent transition-colors mb-2"
+                    />
+                    {% if !tags.is_empty() %}
+                    <div class="flex flex-wrap gap-1.5">
+                        {% for tag in tags %}
+                        <label
+                            class="cursor-pointer text-[12.5px] rounded-md px-2.5 py-1 border border-line text-ink-soft bg-paper-deeper has-checked:bg-accent has-checked:text-white has-checked:border-accent transition-colors"
+                        >
+                            <input
+                                type="checkbox"
+                                name="tag_ids"
+                                value="{{ tag.id }}"
+                                {%
+                                if
+                                self.is_tag_selected(tag.id)
+                                %}checked{%
+                                endif
+                                %}
+                                class="hidden"
+                            />
+                            {{ tag.name }}
+                        </label>
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+                </div>
+
+                <div
+                    class="grid text-sm after:px-3.5 after:py-2.5 [&>textarea]:text-inherit after:text-inherit [&>textarea]:resize-none [&>textarea]:overflow-hidden [&>textarea]:[grid-area:1/1/2/2] after:[grid-area:1/1/2/2] after:whitespace-pre-wrap after:invisible after:content-[attr(data-cloned-val)_'_'] after:border after:border-transparent"
                 >
-                    Cancel
-                </button>
+                    <textarea
+                        class="w-full border border-line rounded-lg px-3.5 py-2.5 text-ink placeholder:text-ink-faint focus:outline-none focus:ring-2 focus:ring-accent focus:border-accent transition-colors"
+                        name="desc"
+                        id="desc"
+                        rows="3"
+                        onInput="this.parentNode.dataset.clonedVal = this.value"
+                        placeholder='{{"bookmark-desc-placeholder"|t}}'
+                    >
+{{ desc }}</textarea
+                    >
+                </div>
                 <button
                     type="submit"
-                    id="submit-upload"
-                    class="px-4 py-2 bg-accent text-white rounded-lg hover:bg-accent-ink transition-colors"
+                    class="px-4 py-2.5 inline-flex items-center justify-center bg-accent text-white font-medium text-sm rounded-lg shadow-sm hover:bg-accent-ink transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2"
                 >
-                    Upload
+                    {{"bookmark-edit-submit"|t}}
                 </button>
             </div>
         </form>
     </div>
-</div>
+
+    <!-- Upload Modal -->
+    <div id="upload-modal" class="upload-modal">
+        <div class="bg-white rounded-xl shadow-xl p-6 w-full max-w-md">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="font-display font-semibold text-base text-ink">
+                    Upload Cover Image
+                </h3>
+            </div>
+
+            <form
+                id="upload-form"
+                hx-post="/manage/upload"
+                hx-encoding="multipart/form-data"
+                hx-swap="none"
+                hx-on::before-request="onUploadStart()"
+                hx-on::after-request="onUploadComplete(event)"
+                hx-on::send-error="onUploadNetworkError()"
+                class="flex flex-col gap-4"
+            >
+                <div class="flex flex-col items-center gap-4">
+                    <!-- Image preview container -->
+                    <img
+                        id="image-preview"
+                        class="rounded-lg overflow-hidden image-preview object-cover aspect-video"
+                        alt="Preview"
+                    />
+
+                    <div class="w-full">
+                        <label class="block text-sm font-medium text-ink mb-1.5"
+                            >Select Image</label
+                        >
+                        <input
+                            type="file"
+                            id="image-upload"
+                            name="image"
+                            accept="image/*"
+                            required
+                            hx-on:change="previewImage(event)"
+                            class="w-full px-3 py-2 border border-line rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-accent"
+                        />
+                    </div>
+                </div>
+
+                <div id="upload-status" class="text-sm"></div>
+
+                <div class="flex justify-end gap-2">
+                    <button
+                        type="button"
+                        id="cancel-upload"
+                        hx-on:click="closeUploadModal()"
+                        class="px-4 py-2 text-ink-soft hover:bg-paper-deeper rounded-lg transition-colors"
+                    >
+                        Cancel
+                    </button>
+                    <button
+                        type="submit"
+                        id="submit-upload"
+                        class="px-4 py-2 bg-accent text-white rounded-lg hover:bg-accent-ink transition-colors"
+                    >
+                        Upload
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</main>
 {% endblock content %} {% block script %}
 <script>
     function openUploadModal() {

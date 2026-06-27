@@ -19,11 +19,7 @@
         {% endblock head %}
     </head>
     <body class="bg-paper text-ink font-body antialiased">
-        <div
-            class="flex flex-col min-h-svh w-full items-center justify-center p-4 md:p-10"
-        >
-            {% block content %}{% endblock content %}
-        </div>
-        {% block script %}{% endblock script %}
+        {% block content %}{% endblock content %} {% block script %}{% endblock
+        script %}
     </body>
 </html>

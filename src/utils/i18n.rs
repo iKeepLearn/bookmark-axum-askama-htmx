@@ -73,3 +73,11 @@ fn parse_accept_language(headers: &HeaderMap) -> Option<LanguageIdentifier> {
         .map(|tag| tag.trim())
         .find_map(pick_supported)
 }
+
+pub fn current_lang() -> String {
+    let lang = CURRENT_LANG
+        .try_with(|l| l.clone())
+        .unwrap_or_else(|_| default_lang());
+
+    lang.to_string()
+}

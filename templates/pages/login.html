@@ -1,5 +1,6 @@
 {% extends "layouts/base.html" %} {% block title %}{{ "page-title-login"|t }}{% endblock %} {% block
 content %}
+<main class="flex flex-col min-h-svh w-full p-4 md:p-10">
 <div class="w-full flex justify-end">
     <select class="text-[11.5px] px-2.5 py-1 rounded-md bg-paper-deep text-ink-soft border border-transparent focus:border-accent"
         onchange="location.href=this.value">
@@ -13,7 +14,7 @@ content %}
     </select>
 </div>
 <div
-    class="flex flex-col min-h-svh w-full items-center justify-center p-4 md:p-10"
+    class="grow flex flex-col  w-full items-center justify-center p-4 md:p-10"
 >
     <div class="w-full max-w-sm">
         <div class="text-center mb-8">
@@ -90,4 +91,5 @@ content %}
         </div>
     </div>
 </div>
+</main>
 {% endblock %}

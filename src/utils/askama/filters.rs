@@ -1,5 +1,6 @@
 use crate::utils::i18n::{CURRENT_LANG, LOCALES, default_lang};
 use fluent_templates::Loader;
+use std::fmt::Display;
 
 #[askama::filter_fn]
 pub fn t(key: &str, _env: &dyn askama::Values) -> ::askama::Result<String> {
@@ -10,10 +11,7 @@ pub fn t(key: &str, _env: &dyn askama::Values) -> ::askama::Result<String> {
 }
 
 #[askama::filter_fn]
-pub fn is_current_lang(
-    value: impl std::fmt::Display,
-    _env: &dyn askama::Values,
-) -> ::askama::Result<bool> {
+pub fn is_current_lang(value: impl Display, _env: &dyn askama::Values) -> ::askama::Result<bool> {
     let lang = CURRENT_LANG
         .try_with(|l| l.clone())
         .unwrap_or_else(|_| default_lang());

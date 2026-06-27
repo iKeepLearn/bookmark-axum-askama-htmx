@@ -4,4 +4,5 @@ pub mod serde;
 
 mod utils;
 
+pub use i18n::current_lang;
 pub use utils::*;

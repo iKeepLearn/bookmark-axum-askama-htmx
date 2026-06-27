@@ -390,8 +390,18 @@ pub async fn edit_bookmark(
     })
 }
 
-pub async fn bookmark_import_page() -> impl IntoResponse {
-    match tokio::fs::read_to_string("static/bookmark-import.html").await {
+pub async fn bookmark_import_page(locale: Locale) -> impl IntoResponse {
+    let html_path = if locale.lang.to_string() == "zh-CN" {
+        "static/bookmark-import.html"
+    } else {
+        "static/bookmark-import.en.html"
+    };
+    tracing::info!(
+        "Loading bookmark import page: {},lang={}",
+        html_path,
+        locale.lang.to_string()
+    );
+    match tokio::fs::read_to_string(html_path).await {
         Ok(html) => Html(html).into_response(),
         Err(_) => e500("Failed to read bookmark-import.html").into_response(),
     }

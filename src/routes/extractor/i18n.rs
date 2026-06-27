@@ -1,8 +1,9 @@
-use crate::utils::i18n::detect_lang;
+use crate::utils::i18n::default_lang;
 use axum::extract::FromRequestParts;
 use fluent_templates::LanguageIdentifier;
 use http::request::Parts;
 
+#[derive(Debug, Clone)]
 pub struct Locale {
     pub lang: LanguageIdentifier,
 }
@@ -14,8 +15,13 @@ where
     type Rejection = ();
 
     async fn from_request_parts(parts: &mut Parts, _: &S) -> Result<Self, Self::Rejection> {
-        let lang = detect_lang(parts);
-
-        Ok(Locale { lang })
+        let locale = parts
+            .extensions
+            .get::<Locale>()
+            .cloned()
+            .unwrap_or_else(|| Locale {
+                lang: default_lang(),
+            });
+        Ok(locale)
     }
 }
