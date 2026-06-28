@@ -41,6 +41,7 @@ export async function fetchCategories(
 ): Promise<Category[]> {
   const res = await fetch(`${config.serverUrl}/api/categories`, {
     headers: authHeaders(config.token),
+    cache: "no-store",
   });
   if (!res.ok) throw new ApiError(await parseErrorMessage(res));
   return res.json();
@@ -49,6 +50,7 @@ export async function fetchCategories(
 export async function fetchTags(config: ExtensionConfig): Promise<Tag[]> {
   const res = await fetch(`${config.serverUrl}/api/tags`, {
     headers: authHeaders(config.token),
+    cache: "no-store",
   });
   if (!res.ok) throw new ApiError(await parseErrorMessage(res));
   return res.json();
@@ -76,6 +78,7 @@ export async function testConnection(
   try {
     const res = await fetch(`${config.serverUrl}/api/categories`, {
       headers: authHeaders(config.token),
+      cache: "no-store",
     });
     return res.ok;
   } catch {
