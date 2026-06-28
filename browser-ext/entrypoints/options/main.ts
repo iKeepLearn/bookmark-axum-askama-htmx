@@ -5,10 +5,6 @@ import { testConnection, generateToken } from "../../utils/api";
 const app = document.getElementById("app")!;
 
 app.innerHTML = `
-  <div class="text-center mb-8">
-    <div class="font-display font-bold text-2xl text-ink mb-1">书签库收藏助手</div>
-    <div class="font-mono text-[11px] uppercase tracking-widest text-ink-faint">settings</div>
-  </div>
 
   <div class="bg-white border border-line rounded-xl shadow-sm p-6">
     <form id="config-form" class="flex flex-col gap-5">

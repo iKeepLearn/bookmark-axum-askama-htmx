@@ -2,6 +2,13 @@ import { getConfig, isConfigured } from "../utils/storage";
 import { createBookmark } from "../utils/api";
 
 const MENU_ID = "save-to-bookmark-library";
+const QUICK_SAVE_WINDOW_WIDTH = 400;
+const QUICK_SAVE_WINDOW_HEIGHT = 640;
+
+interface PageMeta {
+  title?: string;
+  image?: string;
+}
 
 export default defineBackground(() => {
   browser.runtime.onInstalled.addListener(() => {
@@ -28,29 +35,26 @@ export default defineBackground(() => {
       return;
     }
 
-    let meta: { title?: string; image?: string } = {};
+    let meta: PageMeta = {};
     try {
       meta = await browser.tabs.sendMessage(tab.id, { type: "get-page-meta" });
     } catch {
       // content script 在这个页面不可用（比如浏览器内置页面），用 tab 信息兜底
     }
 
-    const title = meta.title || tab.title || targetUrl;
+    const params = new URLSearchParams({
+      title: meta.title || tab.title || "",
+      url: targetUrl,
+      image: meta.image || "",
+    });
 
-    try {
-      await createBookmark(config, {
-        title,
-        url: targetUrl,
-        cover_image: meta.image || "",
-        category_id: null,
-        tag_ids: [],
-        new_tags: "",
-        desc: "",
-      });
-      notify("已收藏", title);
-    } catch (err) {
-      notify("收藏失败", err instanceof Error ? err.message : "未知错误");
-    }
+    await browser.windows.create({
+      url: browser.runtime.getURL(`/quick-save.html?${params.toString()}`),
+      type: "popup",
+      width: QUICK_SAVE_WINDOW_WIDTH,
+      height: QUICK_SAVE_WINDOW_HEIGHT,
+      focused: true,
+    });
   });
 });
 

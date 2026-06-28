@@ -10,23 +10,13 @@ import {
 
 const app = document.getElementById("app")!;
 
-interface PageMeta {
-  title?: string;
-  description?: string;
-  image?: string;
-}
-
-async function getActiveTab() {
-  const [tab] = await browser.tabs.query({ active: true, currentWindow: true });
-  return tab;
-}
-
-async function getPageMeta(tabId: number): Promise<PageMeta | null> {
-  try {
-    return await browser.tabs.sendMessage(tabId, { type: "get-page-meta" });
-  } catch {
-    return null;
-  }
+function readInitialFromQuery() {
+  const params = new URLSearchParams(window.location.search);
+  return {
+    title: params.get("title") || "",
+    url: params.get("url") || "",
+    coverImage: params.get("image") || "",
+  };
 }
 
 async function init() {
@@ -38,8 +28,7 @@ async function init() {
     return;
   }
 
-  const tab = await getActiveTab();
-  const meta = tab?.id ? await getPageMeta(tab.id) : null;
+  const initial = readInitialFromQuery();
 
   try {
     const [categories, tags] = await Promise.all([
@@ -52,11 +41,7 @@ async function init() {
       config,
       categories,
       tags,
-      initial: {
-        title: meta?.title || tab?.title || "",
-        url: tab?.url || "",
-        coverImage: meta?.image || "",
-      },
+      initial,
       onOpenOptions: () => browser.runtime.openOptionsPage(),
       onSaved: () => setTimeout(() => window.close(), 700),
     });
