@@ -13,8 +13,24 @@ use tokio::task::spawn_blocking;
 
 #[derive(Default, Debug, Clone)]
 pub struct LocalAuthProvider {
-    pub secret_key: String,
+    pub secret_key: SecretString,
     pub expire_time: TimeDelta,
+}
+
+impl LocalAuthProvider {
+    pub fn new(secret_key: SecretString, expire_time: impl Into<String>) -> Self {
+        let expire_time = humantime::parse_duration(&expire_time.into())
+            .context("Failed to parse expire time.")
+            .unwrap_or_default();
+        let default_expire_time = TimeDelta::try_days(2).unwrap_or_default();
+        let expire_time =
+            TimeDelta::try_seconds(expire_time.as_secs() as i64).unwrap_or(default_expire_time);
+
+        Self {
+            secret_key,
+            expire_time,
+        }
+    }
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -77,7 +93,7 @@ impl AuthProvider for LocalAuthProvider {
         let token = jsonwebtoken::encode(
             &Header::default(),
             &token_playload,
-            &EncodingKey::from_secret(self.secret_key.as_bytes()),
+            &EncodingKey::from_secret(self.secret_key.expose_secret().as_bytes()),
         )
         .map_err(|e| AuthError::UnexpectedError(e.into()))?;
 
@@ -92,10 +108,10 @@ impl AuthProvider for LocalAuthProvider {
     fn verify_token(&self, token: &str) -> Result<UserToken, AuthError> {
         let decode_token = jsonwebtoken::decode::<TokenPlayload>(
             token,
-            &DecodingKey::from_secret(self.secret_key.as_bytes()),
+            &DecodingKey::from_secret(self.secret_key.expose_secret().as_bytes()),
             &Validation::default(),
         )
-        .map_err(|e| AuthError::UnexpectedError(e.into()))?;
+        .map_err(|e| AuthError::InvalidCredentials(e.into()))?;
         Ok(UserToken {
             username: decode_token.claims.sub,
             token: token.to_string(),

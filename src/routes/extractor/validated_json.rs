@@ -5,6 +5,7 @@ use axum::{
     body::Bytes,
     extract::{FromRequest, Request},
 };
+use tracing::error;
 use validator::Validate;
 
 pub struct ValidatedJson<T>(pub T);
@@ -27,14 +28,17 @@ where
         // 使用 serde_path_to_error 进行反序列化并捕获路径
         match serde_path_to_error::deserialize::<_, T>(&mut deserializer) {
             Ok(value) => {
-                value
-                    .validate()
-                    .map_err(|e| Error::ValidationFields(format_validation_errors(&e)))?;
+                value.validate().map_err(|e| {
+                    let error = format_validation_errors(&e);
+                    error!("Validation error: {:?}", error);
+                    Error::ValidationFields(error)
+                })?;
                 Ok(ValidatedJson(value))
             }
             Err(err) => {
                 let friendly_msg =
                     format_deserialization_error(err.path(), &err.inner().to_string(), "body");
+                error!("Deserialization error: {}", friendly_msg);
                 Err(Error::Validation(friendly_msg))
             }
         }

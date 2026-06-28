@@ -15,7 +15,7 @@ impl<R: BookmarkRepository> BookmarkService<R> {
         Self { repo }
     }
 
-    pub async fn add_bookmark(&self, bookmark: BookmarkAdd) -> Result<(), BookmarkError> {
+    pub async fn add_bookmark(&self, bookmark: BookmarkAdd) -> Result<Bookmark, BookmarkError> {
         self.repo.add_bookmark(bookmark).await
     }
 

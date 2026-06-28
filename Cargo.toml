@@ -55,6 +55,7 @@ chrono = { version = "0.4.45", default-features = false, features = ["clock", "s
 chrono-tz = { version = "0.10.4", default-features = false }
 time = "0.3.49"
 uuid = { version = "1.23.3", features = ["v4", "serde"] }
+humantime = "2.3.0"
 
 # =========================
 # Security / Crypto / RNG
@@ -63,11 +64,6 @@ argon2 = { version = "0.5", features = ["std"] }
 secrecy = { version = "0.10", features = ["serde"] }
 rand = { version = "0.10.1", features = ["std_rng"] }
 jsonwebtoken = { version = "10.4.0", features = ["aws_lc_rs"] }
-
-# =========================
-# HTTP Client
-# =========================
-reqwest = { version = "0.13.4", default-features = false, features = ["json"] }
 
 # =========================
 # Template Engine

@@ -90,7 +90,7 @@
                             hx-on:click="openUploadModal()"
                             class="px-3.5 py-2 bg-paper-deeper hover:bg-paper-deep text-ink-soft hover:text-ink rounded-lg text-sm transition-colors"
                         >
-                            Upload
+                            {{"bookmark-upload-button"|t}}
                         </button>
                     </div>
                     {% if let Some(err) = errors.cover_image %}

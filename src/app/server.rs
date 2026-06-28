@@ -73,7 +73,7 @@ pub async fn create_app(config: Settings) -> Router {
     Router::new()
         .nest_service("/static", assets)
         .merge(public_routes())
-        .merge(protected_routes())
+        .merge(protected_routes(app_state.clone()))
         .fallback(|| async { e404("页面不存在") })
         .layer(
             ServiceBuilder::new()

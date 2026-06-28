@@ -1,8 +1,11 @@
 use super::extractor::i18n::Locale;
+use super::extractor::validated_json::ValidatedJson;
+use crate::Error;
 use crate::domain::bookmark::models::{
     BookmarkAdd, BookmarkBatchAdd, BookmarkUpdate, Category, Tag,
 };
 use crate::domain::bookmark::services::BookmarkService;
+use crate::error::ApiResult;
 use crate::infra::database::bookmark::PgBookmarkRepository;
 use crate::utils::askama::filters;
 use crate::utils::i18n::t_for;
@@ -12,10 +15,11 @@ use axum::Json;
 use axum::extract::{Query, State};
 use axum::response::{Html, IntoResponse, Redirect};
 use axum_extra::extract::Form;
-use serde::Deserialize;
+use serde::{Deserialize, Serialize};
 use serde_json::json;
-use tracing::{error, instrument};
+use tracing::{error, info, instrument};
 use unic_langid::LanguageIdentifier;
+use validator::Validate;
 
 #[derive(Debug, Template)]
 #[template(path = "pages/add_bookmark.html")]
@@ -82,7 +86,7 @@ impl From<EditBookmarkForm> for ValidateForm {
     }
 }
 
-#[derive(Debug, Clone, Deserialize)]
+#[derive(Debug, Clone, Validate, Deserialize)]
 pub struct AddBookmarkForm {
     pub title: String,
     pub url: String,
@@ -416,4 +420,108 @@ pub async fn bookmark_import(
         .batch_add_bookmarks(payload.categories, bookmarks)
         .await;
     Json(json!({"success":true}))
+}
+
+#[derive(Debug, Serialize, Clone)]
+pub struct CategoryResponse {
+    pub id: i32,
+    pub name: String,
+}
+
+impl From<Category> for CategoryResponse {
+    fn from(category: Category) -> Self {
+        Self {
+            id: category.id,
+            name: category.name,
+        }
+    }
+}
+
+#[derive(Debug, Serialize, Clone)]
+pub struct TagResponse {
+    pub id: i32,
+    pub name: String,
+}
+
+impl From<Tag> for TagResponse {
+    fn from(tag: Tag) -> Self {
+        Self {
+            id: tag.id,
+            name: tag.name,
+        }
+    }
+}
+
+#[derive(Debug, Clone, Validate, Deserialize)]
+pub struct AddBookmarkRequest {
+    #[validate(length(min = 1, message = "title is required"))]
+    pub title: String,
+    #[validate(url(message = "url is required"))]
+    pub url: String,
+    #[validate(length(min = 6, message = "cover_image is required"))]
+    pub cover_image: String,
+    #[serde(default)]
+    pub desc: String,
+    #[validate(range(min = 1, max = i32::MAX, message = "category_id is required"))]
+    pub category_id: i32,
+    #[serde(default)]
+    pub tag_ids: Vec<i32>,
+    pub new_tags: String,
+}
+
+#[derive(Debug, Clone, Serialize)]
+pub struct AddBookmarkResponse {
+    pub id: i32,
+}
+
+impl From<AddBookmarkRequest> for BookmarkAdd {
+    fn from(value: AddBookmarkRequest) -> Self {
+        let new_tags = value
+            .new_tags
+            .split(',')
+            .filter_map(|s| match s.trim() {
+                "" => None,
+                s => Some(s.to_string()),
+            })
+            .collect::<Vec<String>>();
+
+        BookmarkAdd {
+            title: value.title,
+            url: value.url,
+            cover_image: value.cover_image,
+            desc: value.desc,
+            category_id: value.category_id,
+            tags: value.tag_ids,
+            new_tags,
+        }
+    }
+}
+
+#[axum::debug_handler]
+pub async fn get_categories(
+    State(service): State<BookmarkService<PgBookmarkRepository>>,
+) -> ApiResult<Json<Vec<CategoryResponse>>> {
+    let categories = service.get_categories().await.unwrap_or_default();
+    Ok(Json(categories.into_iter().map(|c| c.into()).collect()))
+}
+
+#[axum::debug_handler]
+pub async fn get_tags(
+    State(service): State<BookmarkService<PgBookmarkRepository>>,
+) -> ApiResult<Json<Vec<TagResponse>>> {
+    let tags = service.get_tags().await.unwrap_or_default();
+    Ok(Json(tags.into_iter().map(|t| t.into()).collect()))
+}
+
+#[axum::debug_handler]
+pub async fn api_add_bookmark(
+    State(service): State<BookmarkService<PgBookmarkRepository>>,
+    ValidatedJson(payload): ValidatedJson<AddBookmarkRequest>,
+) -> ApiResult<Json<AddBookmarkResponse>> {
+    info!("api add bookmark payload: {:?}", payload);
+    let bookmark = service.add_bookmark(payload.into()).await.map_err(|e| {
+        error!("api add bookmark faild {}", e);
+        Error::Internal("add bookmark failed".into())
+    })?;
+    Ok(Json(AddBookmarkResponse { id: bookmark.id }))
 }

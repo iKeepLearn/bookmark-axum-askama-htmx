@@ -1,6 +1,7 @@
 application:
   port: 8000
   host: 0.0.0.0
+  secret_key: "very-long-and-random-secret-key"
   static_directory: "/path/public"
   upload_directory: "/path/upload"
   image_quality: 80.0
@@ -12,3 +13,6 @@ database:
   database_name: "bookmark"
   require_ssl: false
 redis_uri: "redis://127.0.0.1:6379"
+api_token:
+  secret_key: "very-long-and-random-secret-key"
+  expire_time: 1h

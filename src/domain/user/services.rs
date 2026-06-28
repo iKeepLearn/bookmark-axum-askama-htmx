@@ -80,4 +80,8 @@ impl<R: UserRepository> UserService<R> {
             )))
         }
     }
+
+    pub async fn get_user_by_username(&self, username: &str) -> Result<UserInfo, UserError> {
+        self.repo.get_user_by_username(username).await
+    }
 }

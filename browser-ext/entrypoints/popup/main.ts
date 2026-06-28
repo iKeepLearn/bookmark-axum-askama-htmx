@@ -1,6 +1,11 @@
 import "../../assets/tailwind.css";
 import { getConfig, isConfigured } from "../../utils/storage";
-import { fetchCategories, fetchTags, createNav } from "../../utils/api";
+import {
+  fetchCategories,
+  fetchTags,
+  createBookmark,
+  uploadCoverImage,
+} from "../../utils/api";
 import type { Category, Tag } from "../../utils/api";
 import { escapeHtml } from "../../utils/dom";
 
@@ -76,7 +81,7 @@ function renderForm(categories: Category[], tags: Tag[]) {
   app.innerHTML = `
     <div class="flex items-center justify-between mb-4">
       <div class="font-display font-semibold text-base text-ink">保存到书签库</div>
-      <button id="open-options" type="button" class="text-ink-faint hover:text-ink-soft transition-colors" title="设置" aria-label="设置">
+      <button id="open-options" type="button" class="text-ink-faint cursor-pointer hover:text-ink-soft transition-colors" title="设置" aria-label="设置">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
           <circle cx="12" cy="12" r="3" />
           <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z" />
@@ -84,7 +89,7 @@ function renderForm(categories: Category[], tags: Tag[]) {
       </button>
     </div>
 
-    <form id="nav-form" class="flex flex-col gap-4">
+    <form id="bookmark-form" class="flex flex-col gap-4">
       <div class="w-full">
         <input
           id="title" type="text" placeholder="title" required
@@ -100,11 +105,21 @@ function renderForm(categories: Category[], tags: Tag[]) {
       </div>
 
       <div class="w-full">
-        <input
-          id="cover_image" type="text" placeholder="cover image"
-          class="px-3 py-2 border border-line rounded-lg w-full text-sm text-ink placeholder:text-ink-faint focus:outline-none focus:ring-2 focus:ring-accent focus:border-accent transition-colors"
-        />
-        <img id="cover-preview" class="hidden mt-2 w-full aspect-video object-cover rounded-lg border border-line" alt="" />
+        <div class="flex gap-2">
+          <input
+            id="cover_image" type="text" placeholder="cover image"
+            class="px-3 py-2 border border-line rounded-lg w-full text-sm text-ink placeholder:text-ink-faint focus:outline-none focus:ring-2 focus:ring-accent focus:border-accent transition-colors"
+          />
+          <button
+              type="button"
+              id="open-upload-modal"
+              class="shrink-0 px-3.5 py-2 cursor-pointer bg-paper-deeper hover:bg-paper-deep text-ink-soft hover:text-ink rounded-lg text-sm transition-colors disabled:opacity-50"
+          >
+          Upload
+          </button>
+          <input id="cover-file-input" name="image" type="file" accept="image/*" class="hidden" />
+        </div>
+
       </div>
 
       ${
@@ -150,18 +165,74 @@ function renderForm(categories: Category[], tags: Tag[]) {
   });
 
   const coverInput = document.getElementById("cover_image") as HTMLInputElement;
-  const coverPreview = document.getElementById(
-    "cover-preview",
-  ) as HTMLImageElement;
-  coverInput.addEventListener("input", () => {
-    const v = coverInput.value.trim();
-    if (v) {
-      coverPreview.src = v;
-      coverPreview.classList.remove("hidden");
-    } else {
-      coverPreview.classList.add("hidden");
+
+  const uploadBtn = document.getElementById(
+    "open-upload-modal",
+  ) as HTMLButtonElement;
+  const fileInput = document.getElementById(
+    "cover-file-input",
+  ) as HTMLInputElement;
+
+  uploadBtn.addEventListener("click", () => {
+    fileInput.click();
+  });
+
+  fileInput.addEventListener("change", async () => {
+    const file = fileInput.files?.[0];
+    if (!file) return;
+
+    if (!file.type.startsWith("image/")) {
+      setStatus("请选择图片文件", "error");
+      fileInput.value = "";
+      return;
+    }
+
+    const config = await getConfig();
+    uploadBtn.disabled = true;
+    uploadBtn.textContent = "上传中…";
+    setStatus("正在上传图片…", "info");
+
+    try {
+      // 上传成功后，cover_image 的值固定为后端返回的 url；
+      // 用户后续手动修改输入框，则又会变回"用户输入的图片 url"
+      const { url, previewUrl } = await uploadCoverImage(config, file);
+      coverInput.value = url;
+      setStatus("图片上传成功", "ok");
+    } catch (err) {
+      setStatus(
+        err instanceof Error ? `上传失败：${err.message}` : "图片上传失败",
+        "error",
+      );
+    } finally {
+      uploadBtn.disabled = false;
+      uploadBtn.textContent = "Upload";
+      fileInput.value = "";
     }
   });
+}
+
+function isValidHttpUrl(value: string): boolean {
+  if (value.startsWith("images/")) return true;
+  try {
+    const u = new URL(value);
+    return u.protocol === "http:" || u.protocol === "https:";
+  } catch {
+    return false;
+  }
+}
+
+function validateBookmarkForm(input: {
+  title: string;
+  url: string;
+  cover_image: string;
+}): string | null {
+  if (!input.title) return "请填写标题";
+  if (!input.url) return "请填写网址";
+  if (!isValidHttpUrl(input.url)) return "网址格式不正确";
+  if (input.cover_image && !isValidHttpUrl(input.cover_image)) {
+    return "封面图片地址格式不正确";
+  }
+  return null;
 }
 
 function setStatus(text: string, kind: "ok" | "error" | "info") {
@@ -222,7 +293,7 @@ async function init() {
     coverPreview.classList.remove("hidden");
   }
 
-  const form = document.getElementById("nav-form") as HTMLFormElement;
+  const form = document.getElementById("bookmark-form") as HTMLFormElement;
   const submitBtn = document.getElementById("submit-btn") as HTMLButtonElement;
 
   form.addEventListener("submit", async (e) => {
@@ -237,20 +308,29 @@ async function init() {
       form.querySelectorAll<HTMLInputElement>('input[name="tag_ids"]:checked'),
     );
 
+    const payload = {
+      title: titleInput.value.trim(),
+      url: urlInput.value.trim(),
+      cover_image: coverInput.value.trim(),
+      category_id: categoryRaw ? Number(categoryRaw) : null,
+      tag_ids: tagCheckboxes.map((el) => Number(el.value)),
+      new_tags: (
+        document.getElementById("new_tags") as HTMLInputElement
+      ).value.trim(),
+      desc: (
+        document.getElementById("desc") as HTMLTextAreaElement
+      ).value.trim(),
+    };
+
+    const validationError = validateBookmarkForm(payload);
+    if (validationError) {
+      submitBtn.disabled = false;
+      setStatus(validationError, "error");
+      return;
+    }
+
     try {
-      await createNav(config, {
-        title: titleInput.value.trim(),
-        url: urlInput.value.trim(),
-        cover_image: coverInput.value.trim(),
-        category_id: categoryRaw ? Number(categoryRaw) : null,
-        tag_ids: tagCheckboxes.map((el) => Number(el.value)),
-        new_tags: (
-          document.getElementById("new_tags") as HTMLInputElement
-        ).value.trim(),
-        desc: (
-          document.getElementById("desc") as HTMLTextAreaElement
-        ).value.trim(),
-      });
+      await createBookmark(config, payload);
       setStatus("已保存 ✓", "ok");
       setTimeout(() => window.close(), 700);
     } catch (err) {

@@ -9,6 +9,7 @@ pub struct Settings {
     pub database: DatabaseSettings,
     pub application: ApplicationSettings,
     pub redis_uri: SecretString,
+    pub api_token: ApiTokenSettings,
 }
 
 #[derive(serde::Deserialize, Clone)]
@@ -19,6 +20,12 @@ pub struct ApplicationSettings {
     pub static_directory: String,
     pub upload_directory: String,
     pub image_quality: f32,
+}
+
+#[derive(serde::Deserialize, Clone)]
+pub struct ApiTokenSettings {
+    pub secret_key: SecretString,
+    pub expire_time: String,
 }
 
 #[derive(serde::Deserialize, Clone)]

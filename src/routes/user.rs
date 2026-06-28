@@ -1,18 +1,22 @@
 use super::PageResult;
 use super::extractor::i18n::Locale;
+use super::extractor::validated_json::ValidatedJson;
+use crate::Error;
 use crate::domain::user::models::{Credentials, UserInfo, UserToken};
 use crate::domain::user::services::UserService;
+use crate::error::ApiResult;
 use crate::infra::auth_provider::local::LocalAuthProvider;
 use crate::infra::database::user::PgUserRepository;
 use crate::utils::askama::filters;
 use crate::utils::i18n::t_for;
 use askama::Template;
-use axum::Form;
 use axum::extract::State;
+use axum::{Form, Json};
 use secrecy::{ExposeSecret, SecretString};
 use serde::{Deserialize, Serialize};
 use tower_sessions::Session;
 use tracing::error;
+use validator::Validate;
 
 const FLASH_KEY: &str = "flash_messages";
 
@@ -262,4 +266,35 @@ pub async fn get_token_submit(
         errors,
         username: form.username,
     })
+}
+
+#[derive(Debug, Validate, Deserialize)]
+pub struct LoginRequest {
+    #[validate(length(min = 2, message = "username must be at least 2 characters"))]
+    pub username: String,
+    #[validate(length(min = 6, message = "password must be at least 6 characters"))]
+    pub password: String,
+}
+
+#[derive(Debug, Serialize)]
+pub struct LoginResponse {
+    pub token: String,
+}
+
+pub async fn get_api_token(
+    State(service): State<UserService<PgUserRepository>>,
+    State(auth_provider): State<LocalAuthProvider>,
+    ValidatedJson(payload): ValidatedJson<LoginRequest>,
+) -> ApiResult<Json<LoginResponse>> {
+    let credentials = Credentials {
+        username: payload.username.clone(),
+        password: SecretString::from(payload.password),
+    };
+    match service.get_api_token(&credentials, &auth_provider).await {
+        Ok(user) => Ok(Json(LoginResponse { token: user.token })),
+        Err(err) => {
+            error!("Failed to authenticate: {}", err);
+            Err(Error::InvalidPermission("invalid_permission".to_string()))
+        }
+    }
 }

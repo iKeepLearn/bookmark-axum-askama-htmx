@@ -61,6 +61,30 @@ impl From<Tag> for DTag {
 }
 
 #[derive(Debug, Clone, FromRow, Deserialize)]
+pub struct DbBookmark {
+    pub id: i32,
+    pub title: String,
+    pub url: String,
+    pub cover_image: String,
+    pub category_id: i32,
+    pub created_at: DateTime<Utc>,
+}
+
+impl From<DbBookmark> for DBookmark {
+    fn from(value: DbBookmark) -> Self {
+        DBookmark {
+            id: value.id,
+            title: value.title,
+            url: value.url,
+            cover_image: value.cover_image,
+            tags: vec![],
+            category_id: value.category_id,
+            created_at: value.created_at,
+        }
+    }
+}
+
+#[derive(Debug, Clone, FromRow, Deserialize)]
 pub struct Bookmark {
     pub id: i32,
     pub title: String,
@@ -132,15 +156,15 @@ impl BookmarkRepository for PgBookmarkRepository {
         }
     }
 
-    async fn add_bookmark(&self, bookmark: BookmarkAdd) -> Result<(), BookmarkError> {
+    async fn add_bookmark(&self, bookmark: BookmarkAdd) -> Result<DBookmark, BookmarkError> {
         let mut tx = self.pool.begin().await.context("begin transaction error")?;
 
-        let bookmark_id: i32 = sqlx::query_scalar(
+        let bookmark_res = sqlx::query_as::<_, DbBookmark>(
             r#"
             INSERT INTO bookmarks (title, cover_image, url, "desc", category_id)
             VALUES ($1, $2, $3, $4, $5)
             ON CONFLICT (url) DO UPDATE SET title = EXCLUDED.title, cover_image = EXCLUDED.cover_image, "desc" = EXCLUDED."desc", category_id = EXCLUDED.category_id
-            RETURNING id
+            RETURNING *
             "#,
         )
         .bind(bookmark.title)
@@ -149,7 +173,10 @@ impl BookmarkRepository for PgBookmarkRepository {
         .bind(bookmark.desc)
         .bind(bookmark.category_id)
         .fetch_one(&mut *tx)
-        .await.context("add bookmark error")?;
+        .await.map_err(|e|{
+            error!("add bookmark error: {}", e);
+            BookmarkError::Unkown(e.into())
+        })?;
 
         for tag_id in bookmark.tags {
             sqlx::query(
@@ -159,11 +186,14 @@ impl BookmarkRepository for PgBookmarkRepository {
                 ON CONFLICT DO NOTHING
                 "#,
             )
-            .bind(bookmark_id)
+            .bind(bookmark_res.id)
             .bind(tag_id)
             .execute(&mut *tx)
             .await
-            .context("add bookmark tag error")?;
+            .map_err(|e| {
+                error!("add bookmark tag error: {}", e);
+                BookmarkError::Unkown(e.into())
+            })?;
         }
 
         for tag_name in &bookmark.new_tags {
@@ -179,7 +209,10 @@ impl BookmarkRepository for PgBookmarkRepository {
             .bind(tag_name)
             .fetch_one(&mut *tx)
             .await
-            .context("add bookmark tag error")?;
+            .map_err(|e| {
+                error!("add bookmark tag error: {}", e);
+                BookmarkError::Unkown(e.into())
+            })?;
 
             // 关联到 nav
             sqlx::query(
@@ -189,15 +222,18 @@ impl BookmarkRepository for PgBookmarkRepository {
                 ON CONFLICT DO NOTHING
                 "#,
             )
-            .bind(bookmark_id)
+            .bind(bookmark_res.id)
             .bind(tag_id)
             .execute(&mut *tx)
             .await
-            .context("add bookmark tag error")?;
+            .map_err(|e| {
+                error!("add bookmark tag error: {}", e);
+                BookmarkError::Unkown(e.into())
+            })?;
         }
 
         tx.commit().await.context("commit transaction error")?;
-        Ok(())
+        Ok(bookmark_res.into())
     }
     async fn get_categories_with_bookmark_count(&self) -> Result<Vec<Cwbm>, BookmarkError> {
         match sqlx::query_as::<_, CategoryWithBookmarkCount>(

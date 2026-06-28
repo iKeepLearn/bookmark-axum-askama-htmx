@@ -1,9 +1,11 @@
+use crate::domain::user::error::{AuthError, UserError};
 use axum::Json;
 use axum::http::StatusCode;
 use axum::response::{IntoResponse, Response};
 use chrono::Utc;
 use std::collections::HashMap;
 use thiserror::Error;
+use tracing::error;
 
 #[derive(Error, Debug, Clone)]
 pub enum Error {
@@ -66,7 +68,10 @@ impl IntoResponse for Error {
             Error::BadRequest(message) => (StatusCode::BAD_REQUEST, message.to_string()),
             Error::InvalidPermission(message) => (StatusCode::FORBIDDEN, message.to_string()),
             Error::Validation(message) => (StatusCode::BAD_REQUEST, message.to_string()),
-            Error::ValidationFields(_) => (StatusCode::BAD_REQUEST, "Need more fields".to_string()),
+            Error::ValidationFields(message) => (
+                StatusCode::BAD_REQUEST,
+                format!("fields are invalid: {:?}", message),
+            ),
         };
 
         let body = serde_json::json!({
@@ -89,5 +94,38 @@ impl From<std::io::Error> for Error {
 impl From<serde_json::Error> for Error {
     fn from(value: serde_json::Error) -> Self {
         Error::Internal(value.to_string())
+    }
+}
+
+impl From<AuthError> for Error {
+    fn from(value: AuthError) -> Self {
+        match value {
+            AuthError::InvalidPermission(e) => {
+                error!("Invalid permission: {}", e);
+                Error::InvalidPermission("Invalid permission".to_string())
+            }
+            AuthError::InvalidCredentials(e) => {
+                error!("Invalid credentials: {}", e);
+                Error::InvalidAuth
+            }
+            AuthError::UnexpectedError(e) => {
+                error!("Unexpected error: {}", e);
+                Error::Internal("Unexpected error".to_string())
+            }
+        }
+    }
+}
+
+impl From<UserError> for Error {
+    fn from(value: UserError) -> Self {
+        match value {
+            UserError::NotFound => Error::NotFound("user".into()),
+            UserError::Exists => Error::BadRequest("user already exists".into()),
+            UserError::InvalidPassword => Error::BadRequest("invalid password".into()),
+            UserError::Unkown(e) => {
+                error!("Unexpected error: {}", e);
+                Error::Internal("Unexpected error".to_string())
+            }
+        }
     }
 }

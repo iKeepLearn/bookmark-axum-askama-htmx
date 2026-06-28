@@ -18,7 +18,7 @@ pub trait BookmarkRepository: Send + Sync + 'static {
     fn add_bookmark(
         &self,
         bookmark: BookmarkAdd,
-    ) -> impl Future<Output = Result<(), BookmarkError>> + Send;
+    ) -> impl Future<Output = Result<Bookmark, BookmarkError>> + Send;
 
     fn update_bookmark(
         &self,

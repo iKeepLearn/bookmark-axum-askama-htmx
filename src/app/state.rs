@@ -38,7 +38,8 @@ impl AppState {
         let user_repository = PgUserRepository::new(pool.clone());
         let user_service = UserService::new(user_repository);
 
-        let auth_provider = LocalAuthProvider::default();
+        let auth_provider =
+            LocalAuthProvider::new(config.api_token.secret_key, config.api_token.expire_time);
         let image = ImageConverter::new(config.application.image_quality);
         let image_service = ImageService::new(image, LocalStorage::new(upload_driectory));
 

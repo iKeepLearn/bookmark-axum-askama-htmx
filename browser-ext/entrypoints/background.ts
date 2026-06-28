@@ -1,5 +1,5 @@
 import { getConfig, isConfigured } from "../utils/storage";
-import { createNav } from "../utils/api";
+import { createBookmark } from "../utils/api";
 
 const MENU_ID = "save-to-bookmark-library";
 
@@ -38,7 +38,7 @@ export default defineBackground(() => {
     const title = meta.title || tab.title || targetUrl;
 
     try {
-      await createNav(config, {
+      await createBookmark(config, {
         title,
         url: targetUrl,
         cover_image: meta.image || "",

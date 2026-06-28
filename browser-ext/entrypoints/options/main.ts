@@ -1,6 +1,6 @@
 import "../../assets/tailwind.css";
 import { getConfig, setConfig } from "../../utils/storage";
-import { testConnection } from "../../utils/api";
+import { testConnection, generateToken } from "../../utils/api";
 
 const app = document.getElementById("app")!;
 
@@ -27,14 +27,42 @@ app.innerHTML = `
 
       <div class="w-full">
         <label class="block font-mono text-[10.5px] uppercase tracking-[0.08em] text-ink-faint mb-1.5">
-          API Token
+          用户名
+        </label>
+        <input
+          id="username"
+          type="text"
+          autocomplete="username"
+          placeholder="登录用户名"
+          class="px-3.5 py-2.5 border border-line rounded-lg w-full text-sm text-ink placeholder:text-ink-faint focus:outline-none focus:ring-2 focus:ring-accent focus:border-accent transition-colors"
+        />
+      </div>
+
+      <div class="w-full">
+        <label class="block font-mono text-[10.5px] uppercase tracking-[0.08em] text-ink-faint mb-1.5">
+          密码
+        </label>
+        <input
+          id="password"
+          type="password"
+          autocomplete="current-password"
+          placeholder="登录密码"
+          class="px-3.5 py-2.5 border border-line rounded-lg w-full text-sm text-ink placeholder:text-ink-faint focus:outline-none focus:ring-2 focus:ring-accent focus:border-accent transition-colors"
+        />
+      </div>
+
+      <div class="w-full">
+        <label class="block font-mono text-[10.5px] uppercase tracking-[0.08em] text-ink-faint mb-1.5">
+          Token
         </label>
         <input
           id="token"
           type="text"
-          placeholder="登录书签库网页版，在「设置 → API Token」里生成"
-          class="px-3.5 py-2.5 border border-line rounded-lg w-full text-sm text-ink placeholder:text-ink-faint focus:outline-none focus:ring-2 focus:ring-accent focus:border-accent transition-colors"
+          readonly
+          placeholder="点击下方「生成密钥」自动获取"
+          class="px-3.5 py-2.5 border border-line rounded-lg w-full text-sm text-ink-soft bg-paper-deeper placeholder:text-ink-faint focus:outline-none transition-colors"
         />
+        <p class="text-ink-faint text-xs mt-1.5">没有服务？访问 <a class="text-accent" href="https://github.com/ikeeplearn/bookmark-axum-askama-htmx" target="_blank">项目仓库</a> 按 README 进行部署</p>
       </div>
 
       <div id="status" class="text-sm min-h-4.5"></div>
@@ -42,14 +70,15 @@ app.innerHTML = `
       <div class="flex gap-2">
         <button
           type="submit"
-          class="flex-1 px-4 py-2.5 inline-flex items-center justify-center bg-accent text-white font-medium text-sm rounded-lg shadow-sm hover:bg-accent-ink transition-colors"
+          id="generate-btn"
+          class="flex-1 px-4 py-2.5 cursor-pointer inline-flex items-center justify-center bg-accent text-white font-medium text-sm rounded-lg shadow-sm hover:bg-accent-ink transition-colors disabled:opacity-60"
         >
-          保存
+          生成密钥
         </button>
         <button
           type="button"
           id="test-btn"
-          class="px-4 py-2.5 text-ink-soft border border-line rounded-lg text-sm hover:bg-paper-deeper transition-colors"
+          class="px-4 py-2.5 cursor-pointer text-ink-soft border border-line rounded-lg text-sm hover:bg-paper-deeper transition-colors"
         >
           测试连接
         </button>
@@ -62,14 +91,19 @@ const form = document.getElementById("config-form") as HTMLFormElement;
 const serverUrlInput = document.getElementById(
   "server-url",
 ) as HTMLInputElement;
+const usernameInput = document.getElementById("username") as HTMLInputElement;
+const passwordInput = document.getElementById("password") as HTMLInputElement;
 const tokenInput = document.getElementById("token") as HTMLInputElement;
 const statusEl = document.getElementById("status") as HTMLDivElement;
 const testBtn = document.getElementById("test-btn") as HTMLButtonElement;
+const generateBtn = document.getElementById(
+  "generate-btn",
+) as HTMLButtonElement;
 
 function setStatus(text: string, kind: "ok" | "error" | "info") {
   statusEl.textContent = text;
   statusEl.className =
-    "text-sm min-h-[18px] " +
+    "text-sm min-h-4.5 " +
     (kind === "ok"
       ? "text-accent-ink"
       : kind === "error"
@@ -85,20 +119,26 @@ function normalizeOrigin(rawUrl: string): string | null {
   }
 }
 
+function updateGenerateBtnLabel() {
+  generateBtn.textContent = tokenInput.value.trim() ? "重新生成" : "生成密钥";
+}
+
 async function init() {
   const config = await getConfig();
   serverUrlInput.value = config.serverUrl;
   tokenInput.value = config.token;
+  updateGenerateBtnLabel();
 }
 
 form.addEventListener("submit", async (e) => {
   e.preventDefault();
 
   const serverUrl = serverUrlInput.value.trim().replace(/\/+$/, "");
-  const token = tokenInput.value.trim();
+  const username = usernameInput.value.trim();
+  const password = passwordInput.value;
 
-  if (!serverUrl || !token) {
-    setStatus("服务器地址和 Token 都要填", "error");
+  if (!serverUrl || !username || !password) {
+    setStatus("服务器地址、用户名和密码都要填", "error");
     return;
   }
 
@@ -118,16 +158,31 @@ form.addEventListener("submit", async (e) => {
     return;
   }
 
-  await setConfig(serverUrl, token);
+  generateBtn.disabled = true;
+  setStatus("正在获取密钥…", "info");
 
+  const result = await generateToken({ serverUrl, username, password });
+
+  if (!result.ok || !result.token) {
+    generateBtn.disabled = false;
+    setStatus(result.message ?? "获取密钥失败", "error");
+    return;
+  }
+
+  tokenInput.value = result.token;
+  await setConfig(serverUrl, result.token);
+  passwordInput.value = "";
   setStatus("正在测试连接…", "info");
-  const ok = await testConnection({ serverUrl, token });
+  const ok = await testConnection({ serverUrl, token: result.token });
   setStatus(
     ok
       ? "保存成功，连接正常"
       : "已保存，但连接测试没通过，检查地址和 Token 是否正确",
     ok ? "ok" : "error",
   );
+
+  setStatus("密钥已获取并保存", "ok");
+  generateBtn.disabled = false;
 });
 
 testBtn.addEventListener("click", async () => {

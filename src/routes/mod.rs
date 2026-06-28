@@ -9,7 +9,8 @@ pub mod middleware;
 
 use self::bookmark::bookmark_import;
 use self::i18n::set_lang;
-use self::user::{get_token_submit, token_form};
+use self::middleware::auth::api_auth_middleware;
+use self::user::{get_api_token, get_token_submit, token_form};
 use crate::app::state::AppState;
 use crate::utils::render_template;
 use askama::Template;
@@ -17,13 +18,15 @@ use axum::response::{IntoResponse, Redirect};
 use axum::routing::{get, post};
 use axum::{Router, middleware as axum_middleware};
 pub use bookmark::{
-    add_bookmark, add_bookmark_form, bookmark_import_page, delete_bookmark, edit_bookmark,
-    get_edit_form,
+    add_bookmark, add_bookmark_form, api_add_bookmark, bookmark_import_page, delete_bookmark,
+    edit_bookmark, get_categories, get_edit_form, get_tags,
 };
 pub use home::get_home;
 pub use image::{get_image, upload_image};
 use middleware::auth::{admin_middleware, auth_middleware};
-pub use user::{SessionUser, changepwd_form, changepwd_submit, login_form, login_submit, logout};
+pub use user::{
+    ApiUser, SessionUser, changepwd_form, changepwd_submit, login_form, login_submit, logout,
+};
 
 pub enum PageResult<T: Template, S: Into<String>> {
     RenderTemplate(T),
@@ -44,9 +47,10 @@ pub fn public_routes() -> axum::Router<AppState> {
         .route("/token", get(token_form).post(get_token_submit))
         .route("/login", get(login_form).post(login_submit))
         .route("/i18n/switch", post(set_lang))
+        .route("/api/token", post(get_api_token))
 }
 
-pub fn protected_routes() -> axum::Router<AppState> {
+pub fn protected_routes(state: AppState) -> axum::Router<AppState> {
     let manage_routes = Router::new().route("/logout", post(logout));
 
     let admin_routes = Router::new()
@@ -61,10 +65,25 @@ pub fn protected_routes() -> axum::Router<AppState> {
         )
         .layer(axum_middleware::from_fn(admin_middleware));
 
-    Router::new()
+    let page_routes = Router::new()
         .route("/", get(get_home))
         .route("/images/{id}", get(get_image))
         .nest("/manage", manage_routes)
         .nest("/manage", admin_routes)
-        .layer(axum_middleware::from_fn(auth_middleware))
+        .layer(axum_middleware::from_fn_with_state(
+            state.clone(),
+            auth_middleware,
+        ));
+
+    let api_routes = Router::new()
+        .route("/bookmark", post(api_add_bookmark))
+        .route("/categories", get(get_categories))
+        .route("/tags", get(get_tags))
+        .route("/upload", post(upload_image))
+        .layer(axum_middleware::from_fn_with_state(
+            state.clone(),
+            api_auth_middleware,
+        ));
+
+    Router::new().merge(page_routes).nest("/api", api_routes)
 }
