@@ -6,3 +6,4 @@ configuration/production.yaml
 .env
 bookmarks.html
 course
+demo
