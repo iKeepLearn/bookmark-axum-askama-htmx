@@ -6,11 +6,68 @@ A high-performance, lightweight bookmark manager built on the Rust ecosystem.
 > * **用户名**：`guest`
 > * **密码**：`guest`
 
+## 📸 Screenshots
+
+### Web Features
+
+| Feature | Screenshot |
+| --- | --- |
+| 🏠 Home | ![Web Home](images/web-home.png) |
+| ➕ Add Bookmark | ![Add Bookmark](images/web-add.png) |
+| ✏️ Edit Bookmark | ![Edit Bookmark](images/web-edit.png) |
+| 📥 Import Bookmarks | ![Import Bookmarks](images/web-import.png) |
+
+### Browser Extension
+
+| Feature | Screenshot |
+| --- | --- |
+| ➕ Add Bookmark | ![Extension Add Bookmark](images/ext-add.png) |
+| ⚙️ Extension Settings | ![Extension Settings](images/ext-setting.png) |
+
+### Install and Use the Browser Extension
+
+#### Using the Compiled Version (Recommended)
+
+A pre-compiled extension package `bookmark-clipper-1.1.0-chrome.zip` is provided in the project root directory. Follow these steps to install:
+
+1. Download `bookmark-clipper-1.1.0-chrome.zip` to any directory
+2. Open Chrome/Edge browser and visit `chrome://extensions` (Edge: `edge://extensions`)
+3. Enable "Developer mode" in the top right corner
+4. Drag and drop the downloaded extension zip file into the Chrome extensions page
+5. After installation, click the extension icon in the browser toolbar to open the settings page
+
+#### Configure the Extension
+
+1. Click the settings icon in the top-right corner of the extension popup to open the settings page
+2. In the settings page, enter your bookmark library URL (e.g., `https://bks.artista.cc`), username, and password, then click "Generate Key"
+3. Once configured, you can save bookmarks in two ways:
+   - **Click the extension icon**: Open the popup, edit the title, select category, add tags, then save
+   - **Right-click menu**: Right-click on a page or link → "Save to Bookmark Library" for quick saving
+
+#### Develop the Extension from Source
+
+To modify the extension functionality, enter the `browser-ext` directory for development:
+
+```bash
+cd browser-ext
+bun install
+bun run dev      # Chrome dev mode with hot reload
+```
+
+After running `bun run dev`, follow the terminal prompt to load the `.output/chrome-mv3-dev` directory in `chrome://extensions`.
+
+Build the extension:
+```bash
+bun run build    # Compiled output in .output/chrome-mv3
+bun run zip      # Package into .zip file
+```
+
 ## 🚀 Features
 
 * **Blazing performance**: Built with the Rust `axum` framework and PostgreSQL — low memory footprint, fast response times.
 * **Modern full-stack experience**: Combines `htmx` with the `askama` template engine to deliver dynamic, no-refresh interactions without a heavyweight frontend framework.
 * **Polished UI**: Built with TailwindCSS for a modern, responsive interface.
+* **Browser extension support**: Companion browser extension for one-click bookmark saving of current pages.
 * **Production-ready deployment**: Ships with ready-to-use Nginx and Systemd configs, with support for separate environment configurations.
 
 ## 🛠️ Tech Stack
@@ -89,20 +146,40 @@ The extracted directory structure looks like this:
 Edit `configuration/base.yaml` to match your server's actual paths and credentials:
 
 ```yaml
+# Application configuration
 application:
+  # HTTP service listening port
   port: 8000
+  # HTTP service listening address
   host: 0.0.0.0
+  # Absolute path to static assets directory (JS/CSS/images, etc.)
   static_directory: "/app/bookmark/public"   # Set to the actual absolute path
+  # Absolute path to file upload directory
   upload_directory: "/app/bookmark/upload"   # Set to the actual upload path
-  image_quality: 80.0                        # WebP compression quality for image conversion, range 0.0-100.0
+  # WebP compression quality for image conversion, range 0.0-100.0 (higher = better quality, larger files)
+  image_quality: 80.0
+# Database configuration
 database:
+  # PostgreSQL host address
   host: "127.0.0.1"
+  # PostgreSQL port
   port: 5432
+  # PostgreSQL username
   username: "postgres"
+  # PostgreSQL password
   password: "your_secure_password"
+  # PostgreSQL database name
   database_name: "bookmark"
+  # Whether SSL connection is required
   require_ssl: false
+# Redis connection URI (for caching and session management)
 redis_uri: "redis://127.0.0.1:6379"
+# API Token configuration (for external apps like browser extension)
+api_token:
+  # Secret key for signing tokens (use a randomly generated key in production)
+  secret_key: "very-long-and-random-secret-key"
+  # Token expiration time (supported units: s/seconds, m/minutes, h/hours, d/days)
+  expire_time: 1h
 ```
 
 ### 3. Initialize the production database

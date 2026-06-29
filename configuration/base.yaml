@@ -1,18 +1,37 @@
+# 应用程序配置
 application:
+  # HTTP 服务监听端口
   port: 8000
+  # HTTP 服务监听地址
   host: 0.0.0.0
-  secret_key: "very-long-and-random-secret-key"
+  # 静态资源目录的绝对路径（JS/CSS/图片等）
   static_directory: "/path/public"
+  # 文件上传目录的绝对路径
   upload_directory: "/path/upload"
+  # 图片转换为 WebP 时的压缩质量，取值范围 0.0-100.0（数值越高质量越好，文件越大）
   image_quality: 80.0
+
+# 数据库配置
 database:
+  # PostgreSQL 主机地址
   host: "127.0.0.1"
+  # PostgreSQL 端口
   port: 5432
+  # PostgreSQL 用户名
   username: "postgres"
+  # PostgreSQL 密码
   password: "postgrespassword"
+  # PostgreSQL 数据库名
   database_name: "bookmark"
+  # 是否需要 SSL 连接
   require_ssl: false
+
+# Redis 连接地址（用于缓存和会话管理）
 redis_uri: "redis://127.0.0.1:6379"
+
+# API Token 配置（用于浏览器插件等外部应用访问）
 api_token:
+  # 用于签名 Token 的密钥（生产环境请使用随机生成的密钥）
   secret_key: "very-long-and-random-secret-key"
+  # Token 过期时间（支持的单位：s/秒，m/分钟，h/小时，d/天）
   expire_time: 1h

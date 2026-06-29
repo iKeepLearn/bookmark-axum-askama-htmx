@@ -6,11 +6,68 @@
 > * **用户名**：`guest`
 > * **密码**：`guest`
 
+## 📸 功能截图
+
+### Web 端功能
+
+| 功能 | 截图 |
+| --- | --- |
+| 🏠 主页 | ![Web 主页](images/web-home.png) |
+| ➕ 添加书签 | ![添加书签](images/web-add.png) |
+| ✏️ 编辑书签 | ![编辑书签](images/web-edit.png) |
+| 📥 导入书签 | ![导入书签](images/web-import.png) |
+
+### 浏览器插件
+
+| 功能 | 截图 |
+| --- | --- |
+| ➕ 添加书签 | ![插件添加书签](images/ext-add.png) |
+| ⚙️ 插件设置 | ![插件设置](images/ext-setting.png) |
+
+### 安装和使用浏览器插件
+
+#### 使用已编译版本（推荐）
+
+项目根目录提供了已编译好的插件包 `bookmark-clipper-1.1.0-chrome.zip`，按以下步骤安装：
+
+1. 下载 `bookmark-clipper-1.1.0-chrome.zip` 到任意目录
+2. 打开 Chrome/Edge 浏览器，访问 `chrome://extensions`（Edge 是 `edge://extensions`）
+3. 开启右上角的「开发者模式」
+4. 拖动下载好的插件压缩包到 Chrome 浏览器的扩展程序页面
+5. 插件安装成功后，点击浏览器工具栏的插件图标打开设置页
+
+#### 配置插件
+
+1. 点击插件右上角的设置图标进入设置页面
+2. 在设置页面中，填写你的书签库地址（如 `https://bks.artista.cc`）、用户名、密码，然后点击保存
+3. 配置完成后，可以通过以下方式收藏书签：
+   - **点击插件图标**：打开弹窗，编辑标题、选择分类、添加标签后保存
+   - **右键菜单**：在网页或链接上右键 →「收藏到书签库」，快速保存
+
+#### 从源码开发插件
+
+如需修改插件功能，进入 `browser-ext` 目录进行开发：
+
+```bash
+cd browser-ext
+bun install
+bun run dev      # Chrome 开发模式，热重载
+```
+
+`bun run dev` 之后，按照终端提示在 `chrome://extensions` 里加载 `.output/chrome-mv3-dev` 目录。
+
+打包插件：
+```bash
+bun run build    # 编译产物在 .output/chrome-mv3
+bun run zip      # 打包成 .zip 文件
+```
+
 ## 🚀 特性
 
 * **极致性能**：基于 Rust 的 `axum` 框架与 PostgreSQL 构建，内存占用低、响应速度快。
 * **现代化全栈体验**：结合 `htmx` 与 `askama` 模板引擎，无需引入重量级前端框架即可实现无刷新的动态交互。
 * **优雅 UI**：采用 TailwindCSS 构建，界面现代、布局响应式。
+* **浏览器插件支持**：配套浏览器插件，一键保存当前页面书签。
 * **生产级部署**：内置开箱即用的 Nginx、Systemd 配置，并支持多环境配置分离。
 
 ## 🛠️ 技术栈
@@ -89,20 +146,40 @@ cd /app/bookmark
 编辑 `configuration/base.yaml`，根据服务器实际情况调整路径与凭证：
 
 ```yaml
+# 应用程序配置
 application:
+  # HTTP 服务监听端口
   port: 8000
+  # HTTP 服务监听地址
   host: 0.0.0.0
+  # 静态资源目录的绝对路径（JS/CSS/图片等）
   static_directory: "/app/bookmark/public"   # 修改为实际的绝对路径
+  # 文件上传目录的绝对路径
   upload_directory: "/app/bookmark/upload"   # 修改为实际的上传路径
-  image_quality: 80.0                        # 图片转换为 WebP 时的压缩质量，取值范围 0.0-100.0
+  # 图片转换为 WebP 时的压缩质量，取值范围 0.0-100.0（数值越高质量越好，文件越大）
+  image_quality: 80.0
+# 数据库配置
 database:
+  # PostgreSQL 主机地址
   host: "127.0.0.1"
+  # PostgreSQL 端口
   port: 5432
+  # PostgreSQL 用户名
   username: "postgres"
+  # PostgreSQL 密码
   password: "your_secure_password"
+  # PostgreSQL 数据库名
   database_name: "bookmark"
+  # 是否需要 SSL 连接
   require_ssl: false
+# Redis 连接地址（用于缓存和会话管理）
 redis_uri: "redis://127.0.0.1:6379"
+# API Token 配置（用于浏览器插件等外部应用访问）
+api_token:
+  # 用于签名 Token 的密钥（生产环境请使用随机生成的密钥）
+  secret_key: "very-long-and-random-secret-key"
+  # Token 过期时间（支持的单位：s/秒，m/分钟，h/小时，d/天）
+  expire_time: 1h
 ```
 
 ### 3. 初始化生产数据库
