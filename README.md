@@ -4,7 +4,7 @@
 
 [Chrome 插件](https://chromewebstore.google.com/detail/%E4%B9%A6%E7%AD%BE%E5%BA%93%E6%94%B6%E8%97%8F%E5%8A%A9%E6%89%8B/ofaddkoiobjlandaffjdckpibjpbbnkm)
 
-[演示视频](https://https://www.bilibili.com/video/BV1XuKQ6mEsa)
+[演示视频](https://www.bilibili.com/video/BV1XuKQ6mEsa)
 
 > [在线体验](https://bks.artista.cc)
 > * **用户名**：`guest`
