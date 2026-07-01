@@ -2,6 +2,9 @@
 
 A high-performance, lightweight bookmark manager built on the Rust ecosystem.
 
+[Chrome Extension](https://chromewebstore.google.com/detail/%E4%B9%A6%E7%AD%BE%E5%BA%93%E6%94%B6%E8%97%8F%E5%8A%A9%E6%89%8B/ofaddkoiobjlandaffjdckpibjpbbnkm)
+
+
 > [online site](https://bks.artista.cc)
 > * **用户名**：`guest`
 > * **密码**：`guest`
