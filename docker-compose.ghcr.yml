@@ -11,7 +11,7 @@
 # =============================================================
 services:
   app:
-    image: ghcr.io/ikeeplearn/bookmark-axum:latest
+    image: ghcr.io/ikeeplearn/bookmark-axum-askama-htmx:latest
     container_name: bookmark-app
     restart: unless-stopped
     ports:

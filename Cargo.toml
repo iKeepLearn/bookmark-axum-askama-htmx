@@ -53,8 +53,8 @@ config = { version = "0.15.24", default-features = false, features = ["yaml"] }
 # =========================
 chrono = { version = "0.4.45", default-features = false, features = ["clock", "serde"] }
 chrono-tz = { version = "0.10.4", default-features = false }
-time = "0.3.49"
-uuid = { version = "1.23.3", features = ["v4", "serde"] }
+time = "0.3.53"
+uuid = { version = "1.23.4", features = ["v4", "serde"] }
 humantime = "2.3.0"
 
 # =========================
