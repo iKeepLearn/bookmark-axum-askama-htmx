@@ -1,0 +1,77 @@
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    # 如果你发布到 Docker Hub / GHCR，用户可以直接用镜像而不用本地构建：
+    # image: yourname/bookmark-manager:latest
+    container_name: bookmark-app
+    restart: unless-stopped
+    ports:
+      - "${APP_PORT:-8000}:8000"
+    environment:
+      POSTGRES_HOST: postgres
+      POSTGRES_PORT: 5432
+      POSTGRES_USER: ${POSTGRES_USER:-bookmark}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD is required}
+      POSTGRES_DB: ${POSTGRES_DB:-bookmark}
+      POSTGRES_REQUIRE_SSL: ${POSTGRES_REQUIRE_SSL:-false}
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      API_TOKEN_SECRET: "${API_TOKEN_SECRET:?missing API_TOKEN_SECRET, run: openssl rand -hex 32}"
+      API_TOKEN_EXPIRE: ${API_TOKEN_EXPIRE:-1h}
+      IMAGE_QUALITY: ${IMAGE_QUALITY:-80.0}
+    volumes:
+      # 用户上传的图片/附件 —— 用 bind mount，方便用户直接备份这个目录
+      - ./data/uploads:/app/upload
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - bookmark-net
+
+  postgres:
+    image: postgres:18-alpine
+    container_name: bookmark-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-bookmark}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD is required}
+      POSTGRES_DB: ${POSTGRES_DB:-bookmark}
+    volumes:
+      # 数据库文件用具名卷 —— 交给 Docker 管理，避免宿主机文件权限问题
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-bookmark}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    networks:
+      - bookmark-net
+    # 生产环境一般不需要对外暴露数据库端口，如需本地调试可取消注释：
+    # ports:
+    #   - "5432:5432"
+
+  redis:
+    image: redis:7-alpine
+    container_name: bookmark-redis
+    restart: unless-stopped
+    volumes:
+      - redis-data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    networks:
+      - bookmark-net
+
+volumes:
+  postgres-data:
+  redis-data:
+
+networks:
+  bookmark-net:
+    driver: bridge

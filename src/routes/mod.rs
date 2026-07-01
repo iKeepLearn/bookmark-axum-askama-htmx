@@ -22,6 +22,7 @@ pub use bookmark::{
     edit_bookmark, get_categories, get_edit_form, get_tags,
 };
 pub use home::get_home;
+use http::StatusCode;
 pub use image::{get_image, upload_image};
 use middleware::auth::{admin_middleware, auth_middleware};
 pub use user::{
@@ -42,12 +43,17 @@ impl<T: Template, S: Into<String>> IntoResponse for PageResult<T, S> {
     }
 }
 
+async fn health_check() -> StatusCode {
+    StatusCode::OK
+}
+
 pub fn public_routes() -> axum::Router<AppState> {
     Router::new()
         .route("/token", get(token_form).post(get_token_submit))
         .route("/login", get(login_form).post(login_submit))
         .route("/i18n/switch", post(set_lang))
         .route("/api/token", post(get_api_token))
+        .route("/health", get(health_check))
 }
 
 pub fn protected_routes(state: AppState) -> axum::Router<AppState> {

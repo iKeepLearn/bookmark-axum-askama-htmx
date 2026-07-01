@@ -118,6 +118,56 @@ cargo run
 
 ---
 
+## 🐳 Docker Deployment (Recommended)
+
+The easiest way to self-host, no need to manually install Rust / PostgreSQL / Redis — just Docker and Docker Compose.
+
+### Option A: Use Pre-built Image (Recommended for Most Users)
+
+```bash
+# 1. Only need the compose file and env file, no need to clone the entire repo
+mkdir bookmark-manager && cd bookmark-manager
+curl -O https://raw.githubusercontent.com/ikeeplearn/bookmark-axum/main/docker-compose.ghcr.yml
+curl -O https://raw.githubusercontent.com/ikeeplearn/bookmark-axum/main/.env.example
+
+# 2. Copy and modify the env file
+cp .env.example .env
+nano .env   # At least change POSTGRES_PASSWORD and API_TOKEN_SECRET
+
+# 3. Start (pull image directly from GHCR, takes tens of seconds)
+docker compose -f docker-compose.ghcr.yml up -d
+```
+
+### Option B: Build Image Locally
+
+```bash
+# 1. Clone the repository
+git clone https://github.com/ikeeplearn/bookmark-axum.git
+cd bookmark-axum
+
+# 2. Copy and modify the env file
+cp .env.example .env
+nano .env   # At least change POSTGRES_PASSWORD and API_TOKEN_SECRET
+
+# 3. Build and start (Rust compilation is slow, may take a few minutes first time)
+docker compose up -d --build
+
+# 4. View logs to confirm successful startup
+docker compose logs -f app
+```
+
+After startup, visit `http://your-server-ip:8000` and log in with the default credentials:
+
+| Username | Password |
+| --- | --- |
+| `admin` | `admin` |
+
+**⚠️ Please change the default password immediately after first login.**
+
+> For more detailed Docker usage, see [DOCKER_DEPLOY.md](./DOCKER_DEPLOY.md) (Chinese).
+
+---
+
 ## 📦 Production Deployment
 
 Deploying to production is straightforward — just download the release archive from the Releases page.

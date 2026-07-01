@@ -119,7 +119,57 @@ cargo run
 
 ---
 
-## 📦 生产部署
+## 🐳 Docker 部署（推荐）
+
+使用 Docker 部署最简单，无需手动安装 Rust / PostgreSQL / Redis，只需要 Docker 和 Docker Compose。
+
+### 方式 A：使用预构建镜像（推荐大多数用户）
+
+```bash
+# 1. 只需要 compose 文件和环境变量文件，不需要克隆整个仓库
+mkdir bookmark-manager && cd bookmark-manager
+curl -O https://raw.githubusercontent.com/ikeeplearn/bookmark-axum/main/docker-compose.ghcr.yml
+curl -O https://raw.githubusercontent.com/ikeeplearn/bookmark-axum/main/.env.example
+
+# 2. 复制环境变量文件并修改
+cp .env.example .env
+nano .env   # 至少修改 POSTGRES_PASSWORD 和 API_TOKEN_SECRET
+
+# 3. 启动（直接从 GHCR 拉取镜像，几十秒搞定）
+docker compose -f docker-compose.ghcr.yml up -d
+```
+
+### 方式 B：本地编译镜像
+
+```bash
+# 1. 克隆仓库
+git clone https://github.com/ikeeplearn/bookmark-axum.git
+cd bookmark-axum
+
+# 2. 复制环境变量文件并修改
+cp .env.example .env
+nano .env   # 至少修改 POSTGRES_PASSWORD 和 API_TOKEN_SECRET
+
+# 3. 构建并启动（Rust 编译较慢，第一次可能要几分钟）
+docker compose up -d --build
+
+# 4. 查看日志，确认启动成功
+docker compose logs -f app
+```
+
+启动完成后访问 `http://your-server-ip:8000`，使用默认账号登录：
+
+| 用户名 | 密码 |
+| --- | --- |
+| `admin` | `admin` |
+
+**⚠️ 首次登录后请立即修改密码。**
+
+> 更详细的 Docker 使用说明请参考 [DOCKER_DEPLOY.md](./DOCKER_DEPLOY.md)。
+
+---
+
+## 📦 生产部署（传统方式）
 
 生产环境部署十分简单，只需从 Release 页面下载对应的压缩包即可。
 

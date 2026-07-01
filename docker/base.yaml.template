@@ -1,0 +1,20 @@
+application:
+  port: 8000
+  host: 0.0.0.0
+  static_directory: "/app/public"
+  upload_directory: "/app/upload"
+  image_quality: ${IMAGE_QUALITY}
+
+database:
+  host: "${POSTGRES_HOST}"
+  port: ${POSTGRES_PORT}
+  username: "${POSTGRES_USER}"
+  password: "${POSTGRES_PASSWORD}"
+  database_name: "${POSTGRES_DB}"
+  require_ssl: ${POSTGRES_REQUIRE_SSL}
+
+redis_uri: "redis://${REDIS_HOST}:${REDIS_PORT}"
+
+api_token:
+  secret_key: "${API_TOKEN_SECRET}"
+  expire_time: ${API_TOKEN_EXPIRE}
